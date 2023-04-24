@@ -132,15 +132,14 @@ def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_siz
     return np.array(likelihood_arr), np.array(wrst_p_arr), np.array(cond_arr), genotype_cluster_df
 
 
-def doubleMADsfromMedian(arr):
-    m = np.median(arr)
-    abs_dev = np.abs(arr - m)
-    left_mad = np.median(abs_dev[arr <= m])
-    right_mad = np.median(abs_dev[arr >= m])
-    arr_mad = left_mad * np.ones(len(arr))
-    arr_mad[arr > m] = right_mad
-    modified_z_score = abs_dev / arr_mad
-    modified_z_score[arr == m] = 0
+def MADsfromMedian(arr):
+    if len(arr.shape) == 1:
+        arr = arr[:,None]
+    median = np.median(arr, axis=0)
+    diff = np.sum((arr - median)**2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+    modified_z_score = 0.6745 * diff / med_abs_deviation
     return modified_z_score
 
 
@@ -227,8 +226,8 @@ def main(argv):
     
     pheno = pd.read_csv(labels_file, sep='\t')
     likelihood_arr, wrst_p_arr, cond_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, cluster_size_limit, perm_p_cutoff, b)
-    double_mad_scores = doubleMADsfromMedian(likelihood_arr)
-    likelihood_cutoff = filter_likelihood_on_dmad(likelihood_arr, double_mad_scores)
+    mad_scores = MADsfromMedian(likelihood_arr)
+    likelihood_cutoff = filter_likelihood_on_dmad(likelihood_arr, mad_scores)
     wrst_pos_genes, flagged_genes = find_and_flag_dtu_genes(IFs, likelihood_arr, likelihood_cutoff, wrst_p_arr, perm_p_cutoff, cond_arr)
     write_final_results(wrst_pos_genes, flagged_genes, output_file)
     genotype_cluster_df.to_csv(spit_cluster_matrix, sep = '\t')
