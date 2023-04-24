@@ -183,18 +183,19 @@ def main(argv):
     tx2gene_file = ''
     perm_p_cutoff = ''
     output_file = ''
+    cluster_size_limit = 12
     b = ''
     spit_cluster_matrix = ''
     
     
     try:
-        opts, args = getopt.getopt(argv,"hi:g:l:m:p:b:A:O:",["IFs_file=", "gene_counts_file=", "labels_file=", "tx2gene_file=", "perm_p_cutoff=", "b=", "spit_cluster_matrix=", "output_file="])
+        opts, args = getopt.getopt(argv,"hi:g:l:m:p:b:n:A:O:",["IFs_file=", "gene_counts_file=", "labels_file=", "tx2gene_file=", "perm_p_cutoff=", "b=", "n_small=", "spit_cluster_matrix=", "output_file="])
     except getopt.GetoptError:
-        print("Usage: dtu_detection.py -i <input isoform fractions file> -g <input gene counts file> -l <input label file> -m <transcript to gene ids mapping file> -p <permutation p cutoff> -b <KDE bandwidth> -A <cluster array file> -O <output file path>")
+        print("Usage: dtu_detection.py -i <input isoform fractions file> -g <input gene counts file> -l <input label file> -m <transcript to gene ids mapping file> -p <permutation p cutoff> -b <KDE bandwidth> -n <n_small> -A <cluster array file> -O <output file path>")
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print("Usage: dtu_detection.py -i <input isoform fractions file> -g <input gene counts file> -l <input label file> -m <transcript to gene ids mapping file> -p <permutation p cutoff> -b <KDE bandwidth> -A <cluster array file> -O <output file path>")
+            print("Usage: dtu_detection.py -i <input isoform fractions file> -g <input gene counts file> -l <input label file> -m <transcript to gene ids mapping file> -p <permutation p cutoff> -b <KDE bandwidth> -n <n_small> -A <cluster array file> -O <output file path>")
             sys.exit()
         elif opt in ("-i", "--IFs_file"):
             IFs_file = arg
@@ -208,10 +209,8 @@ def main(argv):
             perm_p_cutoff = float(arg)
         elif opt in ("-b", "--b"):
             b = float(arg)
-        elif opt in ("-d", "--case_samples"):
-            case_samples_file = arg
-        elif opt in ("-c", "--ctrl_samples"):
-            ctrl_samples_file = arg
+        elif opt in ("-n", "--n_small"):
+            cluster_size_limit = int(arg)
         elif opt in ("-A", "--spit_cluster_matrix"):
             spit_cluster_matrix = arg
         elif opt in ("-O", "--output_file"):
@@ -228,8 +227,6 @@ def main(argv):
     tx2gene_dict = tx2gene.gene_id.to_dict()
     
     pheno = pd.read_csv(labels_file, sep='\t')
-    ctrl_samples = pheno[pheno.condition == 0].id.to_list()
-    case_samples = pheno[pheno.condition == 1].id.to_list()
     likelihood_arr, wrst_p_arr, cond_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, 12, perm_p_cutoff, b)
     double_mad_scores = doubleMADsfromMedian(likelihood_arr)
     likelihood_cutoff = filter_likelihood_on_dmad(likelihood_arr, double_mad_scores)
