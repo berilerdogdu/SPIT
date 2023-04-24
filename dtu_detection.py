@@ -219,7 +219,6 @@ def main(argv):
             
     IFs = pd.read_csv(IFs_file, sep='\t', index_col=0)
     tx_names = list(IFs.index)
-    
     IFs = IFs.round(2)
     
     gene_counts = pd.read_csv(gene_counts_file, sep='\t', index_col=0)
