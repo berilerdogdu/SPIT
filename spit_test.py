@@ -84,30 +84,36 @@ def determine_perm_p_cutoff(min_perm_p_arr, p_values_file):
 def main(argv):
 
     IFs_file = ''
+    gene_counts_file = ''
     labels_file = ''
     num_of_it = ''
-    output_file = ''
+    dominance_filtered_ifs_file = ''
+    dominance_filtered_gene_counts_file = ''
     p_dom = 0.75
     p_values_file = ''
     
     try:
-        opts, args = getopt.getopt(argv,"hi:l:n:o:p:d:",["IFs_file=", "labels_file=", "num_of_it=", "dominance_filtered_ifs_file=", "p_values_file=", "dominance_filter_threshold"])
+        opts, args = getopt.getopt(argv,"hi:g:m:l:n:I:G:P:d:",["IFs_file=", "gene_counts_file=", "labels_file=", "num_of_it=", "dominance_filtered_ifs_file=", "dominance_filtered_gene_counts_file=", "p_values_file=", "dominance_filter_threshold"])
     except getopt.GetoptError:
-        print("Usage: spit_test.py -i <input isoform fractions file> -l <input pheno file> -n <number of iterations> -o <(Output path) dominance filtered ifs file> -p <(Output path) p values file> -d dominance_filter_threshold")
+        print("Usage: spit_test.py -i <input isoform fractions file> -g <input gene counts file> -l <input pheno file> -n <number of iterations> -I <dominance filtered ifs file> -G <dominance filtered gene counts file> -P <p values file> -d dominance_filter_threshold")
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print("Usage: spit_test.py -i <input isoform fractions file> -l <input pheno file> -n <number of iterations> -o <(Output path) dominance filtered ifs file> -p <(Output path) p values file> -d dominance_filter_threshold")
+            print("Usage: spit_test.py -i <input isoform fractions file> -g <input gene counts file> -l <input pheno file> -n <number of iterations> -I <dominance filtered ifs file> -G <dominance filtered gene counts file> -P <p values file> -d dominance_filter_threshold")
             sys.exit()
         elif opt in ("-i", "--IFs_file"):
             IFs_file = arg
+        elif opt in ("-g", "--gene_counts_file"):
+            gene_counts_file = arg
         elif opt in ("-l", "--labels_file"):
             labels_file = arg
         elif opt in ("-n", "--num_of_it"):
             num_of_it = int(arg)
-        elif opt in ("-o", "--output_file"):
-            output_file = arg
-        elif opt in ("-p", "--p_values_file"):
+        elif opt in ("-I", "--dominance_filtered_ifs_file"):
+            dominance_filtered_ifs_file = arg
+        elif opt in ("-G", "--dominance_filtered_gene_counts_file"):
+            dominance_filtered_gene_counts_file = arg
+        elif opt in ("-P", "--p_values_file"):
             p_values_file = arg
         elif opt in ("-d", "--dominance_filter_threshold"):
             p_dom = int(arg)
@@ -117,14 +123,16 @@ def main(argv):
     gene_names = list(IFs.gene_id.unique())
     IFs = IFs.round(2)
     
+    gene_counts = pd.read_csv(gene_counts_file, sep='\t', index_col=0)
     pheno = pd.read_csv(labels_file, sep='\t')
     ctrl_samples = pheno[pheno.condition == 0].id.to_list()
     case_samples = pheno[pheno.condition == 1].id.to_list()
     
     selected_dom_iso_genes = select_genes_w_dom_iso(IFs, ctrl_samples, gene_names, p_dom)
     IFs_selected = IFs[IFs.gene_id.isin(selected_dom_iso_genes)]
-    IFs_selected = IFs
-    IFs_selected.to_csv(output_file, sep = '\t')
+    IFs_selected.to_csv(dominance_filtered_ifs_file, sep = '\t')
+    gene_counts_selected = gene_counts[gene_counts.index.isin(selected_dom_iso_genes)]
+    gene_counts_selected.to_csv(dominance_filtered_gene_counts_file, sep = '\t')
     min_perm_p_arr = mannwhitneyu_permutation(IFs_selected, ctrl_samples, num_of_it)
     p_cutoff = determine_perm_p_cutoff(min_perm_p_arr, p_values_file)
     
