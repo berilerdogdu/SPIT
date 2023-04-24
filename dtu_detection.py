@@ -225,6 +225,8 @@ def main(argv):
     tx2gene_dict = tx2gene.gene_id.to_dict()
     
     pheno = pd.read_csv(labels_file, sep='\t')
+    ctrl_samples = pheno[pheno.condition == 0].id.to_list()
+    case_samples = pheno[pheno.condition == 1].id.to_list()
     likelihood_arr, wrst_p_arr, cond_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, cluster_size_limit, perm_p_cutoff, b)
     mad_scores = MADsfromMedian(likelihood_arr)
     likelihood_cutoff = filter_likelihood_on_dmad(likelihood_arr, mad_scores)
