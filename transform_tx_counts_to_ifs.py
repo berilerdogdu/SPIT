@@ -26,11 +26,11 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hi:m:F:G:",["tfile=", "tx2gene_file=", "iso_fracs_out=", "gene_counts_out="])
     except getopt.GetoptError:
-        print("Usage: filter_and_transform_tx_counts.py -i  <transcript level counts file (tsv)> -m <transcript to gene mapping file (tsv)> -F <output file path for filtered fractions> -G <output file path for filtered gene counts>")
+        print("Usage: transform_tx_counts_to_ifs.py -i  <transcript level counts file (tsv)> -m <transcript to gene mapping file (tsv)> -F <output file path for filtered fractions> -G <output file path for filtered gene counts>")
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print("Usage: filter_and_transform_tx_counts.py -i  <transcript level counts file (tsv)> -f <output file path for filtered fractions> -g <output file path for filtered gene counts>")
+            print("Usage: transform_tx_counts_to_ifs.py -i  <transcript level counts file (tsv)> -m <transcript to gene mapping file (tsv)> -F <output file path for filtered fractions> -G <output file path for filtered gene counts>")
             sys.exit()
         elif opt in ("-i", "--tfile"):
             tx_counts_file = arg
