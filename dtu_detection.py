@@ -212,9 +212,9 @@ def main(argv):
             case_samples_file = arg
         elif opt in ("-c", "--ctrl_samples"):
             ctrl_samples_file = arg
-        elif opt in ("-a", "--spit_cluster_matrix"):
+        elif opt in ("-A", "--spit_cluster_matrix"):
             spit_cluster_matrix = arg
-        elif opt in ("-o", "--output_file"):
+        elif opt in ("-O", "--output_file"):
             output_file = arg
         
             
