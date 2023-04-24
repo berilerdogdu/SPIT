@@ -18,7 +18,6 @@ def select_genes_w_dom_iso(IFs, ctrl_samples, gene_names, p_dom):
     final_dom_iso_genes = set()
     
     for g in gene_names:
-    
         min_if = ctrl_IF_min[ctrl_IF_min.gene_id == g].ctrl_IF_mean
         min_iso = ctrl_IF_min[ctrl_IF_min.gene_id == g].index
         max_if = ctrl_IF_max[ctrl_IF_max.gene_id == g].ctrl_IF_mean
@@ -42,7 +41,7 @@ def mannwhitneyu_permutation(IFs, ctrl_samples, num_of_it):
     sampled_txs = set()
 
     for it in range(1, num_of_it+1):
-        out = '\r'+ str(it) + " iterations completed."
+        out = '\r'+ "Chewing in progress: " + str(it) + " iterations completed."
         if (it == num_of_it):
             print(out)
         else:
@@ -92,7 +91,7 @@ def main(argv):
     p_values_file = ''
     
     try:
-        opts, args = getopt.getopt(argv,"hi:l:n:o:p:d",["IFs_file=", "labels_file=", "num_of_it=", "dominance_filtered_ifs_file=", "p_values_file=", "dominance_filter_threshold"])
+        opts, args = getopt.getopt(argv,"hi:l:n:o:p:d:",["IFs_file=", "labels_file=", "num_of_it=", "dominance_filtered_ifs_file=", "p_values_file=", "dominance_filter_threshold"])
     except getopt.GetoptError:
         print("Usage: spit_test.py -i <input isoform fractions file> -l <input pheno file> -n <number of iterations> -o <(Output path) dominance filtered ifs file> -p <(Output path) p values file> -d dominance_filter_threshold")
         sys.exit(2)
