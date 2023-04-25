@@ -41,7 +41,7 @@ def mannwhitneyu_permutation(IFs, ctrl_samples, num_of_it):
     sampled_txs = set()
 
     for it in range(1, num_of_it+1):
-        out = '\r'+ "Chewing in progress: " + str(it) + " iterations completed."
+        out = '\r'+ str(it) + " iterations completed."
         if (it == num_of_it):
             print(out)
         else:
