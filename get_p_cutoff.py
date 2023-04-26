@@ -32,7 +32,7 @@ def main(argv):
     
     p_values = pd.read_csv(p_values_file, names = ['p']).p.to_list()
     p_cutoff = get_p_cutoff(p_values, k)
-    print("p-value threshold determind as ", p_cutoff, "based on the K selection ", str(k))
+    print( p_cutoff)
 
 
 
