@@ -7,7 +7,6 @@ import scipy.stats as sts
 from collections import defaultdict
 from tqdm import tqdm
 
-
 def select_genes_w_dom_iso(IFs, ctrl_samples, gene_names, p_dom):
 
     IFs.insert(0, "ctrl_IF_mean", IFs[ctrl_samples].mean(axis = 1))
@@ -34,7 +33,6 @@ def select_genes_w_dom_iso(IFs, ctrl_samples, gene_names, p_dom):
             genes_w_dom_iso_counter += 1
     
     return list(final_dom_iso_genes)
-    
 
 def mannwhitneyu_permutation(IFs, ctrl_samples, num_of_it):
 
@@ -66,13 +64,6 @@ def mannwhitneyu_permutation(IFs, ctrl_samples, num_of_it):
     
     return min_perm_p_arr
 
-
-
-
-
-
-
-
 def determine_perm_p_cutoff(min_perm_p_arr, p_values_file):
 
     p_cutoff = np.array(min_perm_p_arr).min()
@@ -80,8 +71,6 @@ def determine_perm_p_cutoff(min_perm_p_arr, p_values_file):
         for i in min_perm_p_arr:
             f.write("%s\n" % i)
     return p_cutoff
-
-
 
 def main(argv):
 
