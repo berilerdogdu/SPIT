@@ -8,6 +8,7 @@ from collections import defaultdict
 from sklearn.neighbors import KernelDensity
 from scipy.signal import argrelextrema
 from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 
 def convert_counts_to_cpm(counts):
@@ -53,7 +54,7 @@ def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_siz
     wrst_p_arr = []
     genotype_cluster_df = pd.DataFrame(0, index=ifs.index, columns=[c for c in range(len(case))])
 
-    for i in ifs.index.to_list():
+    for i in tqdm(ifs.index.to_list()):
         ctrl_arr, case_arr = filter_samples_on_gene_cpm(i, tx2gene_dict, ifs, gene_counts, ctrl, case, cluster_size_lim)
         if(len(ctrl_arr) < cluster_size_lim):
             wrst_p_arr.append(1)
