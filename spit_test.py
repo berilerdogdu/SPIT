@@ -5,6 +5,7 @@ import random
 import math
 import scipy.stats as sts
 from collections import defaultdict
+from tqdm import tqdm
 
 
 def select_genes_w_dom_iso(IFs, ctrl_samples, gene_names, p_dom):
@@ -17,7 +18,8 @@ def select_genes_w_dom_iso(IFs, ctrl_samples, gene_names, p_dom):
     genes_w_dom_iso_counter = 0
     final_dom_iso_genes = set()
     
-    for g in gene_names:
+    print("Selecting genes with stable domminant isoforms:")
+    for g in tqdm(gene_names):
         min_if = ctrl_IF_min[ctrl_IF_min.gene_id == g].ctrl_IF_mean
         min_iso = ctrl_IF_min[ctrl_IF_min.gene_id == g].index
         max_if = ctrl_IF_max[ctrl_IF_max.gene_id == g].ctrl_IF_mean
