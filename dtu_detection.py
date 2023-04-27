@@ -172,7 +172,7 @@ def main(argv):
     pheno = pd.read_csv(labels_file, sep='\t')
     ctrl_samples = pheno[pheno.condition == 0].id.to_list()
     case_samples = pheno[pheno.condition == 1].id.to_list()
-    likelihood_arr, wrst_p_arr, cond_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, cluster_size_limit, perm_p_cutoff, b)
+    likelihood_arr, wrst_p_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, cluster_size_limit, perm_p_cutoff, b)
     mad_scores = MADsfromMedian(likelihood_arr)
     likelihood_cutoff = filter_likelihood_on_dmad(likelihood_arr, mad_scores)
     wrst_pos_genes, flagged_genes = find_and_flag_dtu_genes(IFs, likelihood_arr, likelihood_cutoff, wrst_p_arr, perm_p_cutoff, cond_arr)
