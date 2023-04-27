@@ -10,30 +10,6 @@ from scipy.signal import argrelextrema
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-
-def convert_counts_to_cpm(counts):
-    
-    lib_sizes = counts.sum(axis = 0).to_list()
-    scaled_counts = counts.divide(lib_sizes)
-    cpms = scaled_counts * (10**6)
-    
-    return cpms
-
-
-def filter_samples_on_gene_cpm(tx, tx2gene_dict, ifs, gene_counts, ctrl, case, cluster_size_lim):
-    
-    cpm_gene_lvl = convert_counts_to_cpm(gene_counts)
-    
-    gene_id = tx2gene_dict[tx]
-    cpm_filtered_ifs = ifs.loc[tx, cpm_gene_lvl.columns[(cpm_gene_lvl.loc[gene_id] >= 10)]]
-    cpm_filtered_ctrl = cpm_filtered_ifs[cpm_filtered_ifs.index.isin(ctrl)]
-    cpm_filtered_case = cpm_filtered_ifs[cpm_filtered_ifs.index.isin(case)]
-    ctrl_arr = cpm_filtered_ctrl.to_numpy(copy = True, dtype=np.float64)
-    case_arr = cpm_filtered_case.to_numpy(copy = True, dtype=np.float64)
-
-    return ctrl_arr, case_arr
-
-
 def split_vector_on_kernel(sorted_vector, b):
     p = np.linspace(0,1).reshape(-1, 1)
     kde = KernelDensity(kernel='gaussian', bandwidth=b).fit(sorted_vector.reshape(-1, 1))
@@ -55,7 +31,8 @@ def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_siz
     genotype_cluster_df = pd.DataFrame(0, index=ifs.index, columns=[c for c in range(len(case))])
 
     for i in tqdm(ifs.index.to_list()):
-        ctrl_arr, case_arr = filter_samples_on_gene_cpm(i, tx2gene_dict, ifs, gene_counts, ctrl, case, cluster_size_lim)
+        ctrl_arr = ifs.loc[i, ctrl].to_numpy(copy = True, dtype=np.float64)
+        case_arr = ifs.loc[i, case].to_numpy(copy = True, dtype=np.float64)
         if(len(ctrl_arr) < cluster_size_lim):
             wrst_p_arr.append(1)
             cond_arr.append(-1)
