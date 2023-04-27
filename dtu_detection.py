@@ -175,7 +175,7 @@ def main(argv):
     likelihood_arr, wrst_p_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, cluster_size_limit, perm_p_cutoff, b)
     mad_scores = MADsfromMedian(likelihood_arr)
     likelihood_cutoff = filter_likelihood_on_dmad(likelihood_arr, mad_scores)
-    wrst_pos_genes, flagged_genes = find_and_flag_dtu_genes(IFs, likelihood_arr, likelihood_cutoff, wrst_p_arr, perm_p_cutoff, cond_arr)
+    wrst_pos_genes, flagged_genes = find_and_flag_dtu_genes(IFs, likelihood_arr, likelihood_cutoff, wrst_p_arr, perm_p_cutoff)
     write_final_results(wrst_pos_genes, flagged_genes, output_file)
     genotype_cluster_df.to_csv(spit_cluster_matrix, sep = '\t')
     
