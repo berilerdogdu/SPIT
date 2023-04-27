@@ -17,7 +17,7 @@ def select_genes_w_dom_iso(IFs, ctrl_samples, gene_names, p_dom):
     genes_w_dom_iso_counter = 0
     final_dom_iso_genes = set()
     
-    print("Selecting genes with stable domminant isoforms:")
+    print("Selecting genes with consistently dominant isoforms in control group:")
     for g in tqdm(gene_names):
         min_if = ctrl_IF_min[ctrl_IF_min.gene_id == g].ctrl_IF_mean
         min_iso = ctrl_IF_min[ctrl_IF_min.gene_id == g].index
