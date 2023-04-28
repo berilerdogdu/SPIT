@@ -73,7 +73,7 @@ def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_siz
     wrst_p_arr = []
     cpms = convert_counts_to_cpm(gene_counts)
     genotype_cluster_df = pd.DataFrame(0, index=ifs.index, columns=case)
-    for i in ifs.index.to_list():
+    for i in tqdm(ifs.index.to_list()):
         selected_ctrls, ctrl_arr, filtered_ctrls = filter_samples_on_gene_cpm(f_par, i, tx2gene_dict, ctrl, ifs, cpms)
         selected_cases, case_arr, filtered_cases = filter_samples_on_gene_cpm(f_par, i, tx2gene_dict, case, ifs, cpms)
         genotype_cluster_df.loc[i, filtered_cases] = None
