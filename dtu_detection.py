@@ -11,6 +11,40 @@ from matplotlib import pyplot as plt
 from tqdm import tqdm
 
 
+def convert_counts_to_cpm(counts):
+    lib_sizes = counts.sum(axis = 0).to_list()
+    scaled_counts = counts.divide(lib_sizes)
+    cpms = scaled_counts * (10**6)
+    return cpms
+
+def filter_samples_on_gene_cpm(f_par, tx, tx2gene_dict, samples, ifs, gene_counts):
+    gene_id = tx2gene_dict[tx]
+    cpm_gene_lvl = convert_counts_to_cpm(gene_counts).loc[gene_id, samples].to_dict()
+    selected_samples = []
+    filtered_samples = []
+    if(f_par):
+        for s in cpm_gene_lvl:
+            if (cpm_gene_lvl[s] > 10):
+                selected_samples.append(s)
+            else:
+                filtered_samples.append(s)
+    else:
+        selected_samples = samples
+    selected_if_arr = ifs.loc[tx, selected_samples].to_numpy(copy = True, dtype=np.float64)
+    return np.array(selected_samples), selected_if_arr, filtered_samples
+    
+def groupsize_limit_check(ctrl, case, size_lim):
+    c = 1
+    if((len(ctrl) < size_lim) or (len(case) < size_lim)):
+        c = 0
+    return c
+
+def index_if_arrays(arr, b):
+    sort_ind_arr = np.argsort(arr)
+    sorted_arr = arr[sort_ind_arr]
+    split_ind = split_vector_on_kernel(sorted_arr, b)
+    return sort_ind_arr, sorted_arr, split_ind
+    
 def split_vector_on_kernel(sorted_vector, b):
     p = np.linspace(0,1).reshape(-1, 1)
     kde = KernelDensity(kernel='gaussian', bandwidth=b).fit(sorted_vector.reshape(-1, 1))
@@ -20,44 +54,34 @@ def split_vector_on_kernel(sorted_vector, b):
     split_val = -1
     if(len(mi) > 0):
         split_val = p[mi[np.argmin(scores[mi])]]
-        split_ind = np.nonzero(sorted_vector <= split_val)[0][-1]        
+        split_ind = np.nonzero(sorted_vector <= split_val)[0][-1]
     return split_ind
-    
-def groupsize_limit_check(ctrl, case, size_lim):
-    c = 1
-    if(len(ctrl) < size_lim):
-        c = 0
-    if(len(case) < size_lim):
-        c = 0
-    return c
-    
+        
 def subgroupsize_limit_check(group, split_in, size_lim):
     if((split_in >= size_lim-1) and ((len(group)-split_in) > size_lim)):
         return 1
     return 0
  
 def fit_kde_and_mannwhitney(ctrl_subgroup, case_subgroup, b):
+
     ctrl_kde = KernelDensity(kernel='gaussian', bandwidth=b).fit(ctrl_subgroup.reshape(-1, 1))
     likelihood = ctrl_kde.score(case_subgroup.reshape(-1, 1), y = None)
     r = sts.mannwhitneyu(case_subgroup, ctrl_subgroup, method = 'auto', alternative='two-sided')
     return r, likelihood
 
-def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_size_lim, perm_p_cutoff, b):
+def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_size_lim, perm_p_cutoff, b, f_par):
     likelihood_arr = []
     wrst_p_arr = []
-    genotype_cluster_df = pd.DataFrame(0, index=ifs.index, columns=[c for c in range(len(case))])
-    for i in tqdm(ifs.index.to_list()):
-        ctrl_arr = ifs.loc[i, ctrl].to_numpy(copy = True, dtype=np.float64)
-        case_arr = ifs.loc[i, case].to_numpy(copy = True, dtype=np.float64)
+    genotype_cluster_df = pd.DataFrame(0, index=ifs.index, columns=case)
+    for i in ifs.index.to_list():
+        selected_ctrls, ctrl_arr, filtered_ctrls = filter_samples_on_gene_cpm(f_par, i, tx2gene_dict, ctrl, ifs, gene_counts)
+        selected_cases, case_arr, filtered_cases = filter_samples_on_gene_cpm(f_par, i, tx2gene_dict, case, ifs, gene_counts)
+        genotype_cluster_df.loc[i, filtered_cases] = None
         if((groupsize_limit_check(ctrl_arr, case_arr, cluster_size_lim)) == 0):
             wrst_p_arr.append(1)
-            continue     
-        sort_ind_ctrl_arr = np.argsort(ctrl_arr)
-        sort_ind_case_arr = np.argsort(case_arr)
-        sorted_ctrl_arr = ctrl_arr[sort_ind_ctrl_arr]
-        sorted_case_arr = case_arr[sort_ind_case_arr]
-        ctrl_split_ind = split_vector_on_kernel(sorted_ctrl_arr, b)
-        case_split_ind = split_vector_on_kernel(sorted_case_arr, b)
+            continue
+        sort_ind_ctrl_arr, sorted_ctrl_arr, ctrl_split_ind = index_if_arrays(ctrl_arr, b)
+        sort_ind_case_arr, sorted_case_arr, case_split_ind = index_if_arrays(case_arr, b)
         case_tx_likelihood = 0
         
         if((subgroupsize_limit_check(sorted_case_arr, case_split_ind, cluster_size_lim)) == 0):
@@ -67,9 +91,9 @@ def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_siz
             wrst_p_arr.append(r[1])
         else:
             case_left_tail = sorted_case_arr[0:case_split_ind]
-            case_left_tail_samps = sort_ind_case_arr[0:case_split_ind]
+            case_left_tail_samps = selected_cases[sort_ind_case_arr[0:case_split_ind]]
             case_right_tail = sorted_case_arr[case_split_ind:]
-            case_right_tail_samps = sort_ind_case_arr[case_split_ind:]
+            case_right_tail_samps = selected_cases[sort_ind_case_arr[case_split_ind:]]
             if((subgroupsize_limit_check(sorted_ctrl_arr, ctrl_split_ind, cluster_size_lim))):
                 ctrl_left_tail = sorted_ctrl_arr[0:ctrl_split_ind]
                 ctrl_right_tail = sorted_ctrl_arr[ctrl_split_ind:]
@@ -87,7 +111,6 @@ def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_siz
             if(r_right[1] < perm_p_cutoff):
                 genotype_cluster_df.loc[i, case_right_tail_samps] = 1
             wrst_p_arr.append(min(r_left[1], r_right[1]))
-    genotype_cluster_df.columns = case
     return np.array(likelihood_arr), np.array(wrst_p_arr), genotype_cluster_df
 
 def MADsfromMedian(arr):
@@ -135,6 +158,7 @@ def main(argv):
     output_file = ''
     cluster_size_limit = 12
     b = ''
+    f_par = TRUE
     spit_cluster_matrix = ''   
     try:
         opts, args = getopt.getopt(argv,"hi:g:l:m:p:b:n:A:O:",["IFs_file=", "gene_counts_file=", "labels_file=", "tx2gene_file=", "perm_p_cutoff=", "b=", "n_small=", "spit_cluster_matrix=", "output_file="])
@@ -172,7 +196,7 @@ def main(argv):
     pheno = pd.read_csv(labels_file, sep='\t')
     ctrl_samples = pheno[pheno.condition == 0].id.to_list()
     case_samples = pheno[pheno.condition == 1].id.to_list()
-    likelihood_arr, wrst_p_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, cluster_size_limit, perm_p_cutoff, b)
+    likelihood_arr, wrst_p_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, cluster_size_limit, perm_p_cutoff, b, f_par)
     mad_scores = MADsfromMedian(likelihood_arr)
     likelihood_cutoff = filter_likelihood_on_dmad(likelihood_arr, mad_scores)
     wrst_pos_genes, flagged_genes = find_and_flag_dtu_genes(IFs, likelihood_arr, likelihood_cutoff, wrst_p_arr, perm_p_cutoff)
