@@ -79,6 +79,7 @@ def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_siz
         genotype_cluster_df.loc[i, filtered_cases] = None
         if((groupsize_limit_check(ctrl_arr, case_arr, cluster_size_lim)) == 0):
             wrst_p_arr.append(1)
+            likelihood_arr.append(0)
             continue
         sort_ind_ctrl_arr, sorted_ctrl_arr, ctrl_split_ind = index_if_arrays(ctrl_arr, b)
         sort_ind_case_arr, sorted_case_arr, case_split_ind = index_if_arrays(case_arr, b)
@@ -89,6 +90,7 @@ def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_siz
             if(r[1] < perm_p_cutoff):
                 genotype_cluster_df.loc[i] = 1
             wrst_p_arr.append(r[1])
+            likelihood_arr.append(likelihood)
         else:
             case_left_tail = sorted_case_arr[0:case_split_ind]
             case_left_tail_samps = selected_cases[sort_ind_case_arr[0:case_split_ind]]
