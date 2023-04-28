@@ -6,8 +6,11 @@ def get_p_cutoff(p_values, k):
     n = len(p_values)
     t = int(k*n)
     p_values = np.array(p_values)
-    p_cutoff = np.sort(p_values)[t-1]
-
+    if(t==0):
+      t = 0
+    else:
+      t = t-1
+    p_cutoff = np.sort(p_values)[t]
     return p_cutoff
 
 def main(argv):
