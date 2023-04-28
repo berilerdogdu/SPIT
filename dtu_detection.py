@@ -17,9 +17,9 @@ def convert_counts_to_cpm(counts):
     cpms = scaled_counts * (10**6)
     return cpms
 
-def filter_samples_on_gene_cpm(f_par, tx, tx2gene_dict, samples, ifs, gene_counts):
+def filter_samples_on_gene_cpm(f_par, tx, tx2gene_dict, samples, ifs, cpms):
     gene_id = tx2gene_dict[tx]
-    cpm_gene_lvl = convert_counts_to_cpm(gene_counts).loc[gene_id, samples].to_dict()
+    cpm_gene_lvl = cpms.loc[gene_id, samples].to_dict()
     selected_samples = []
     filtered_samples = []
     if(f_par):
@@ -63,7 +63,6 @@ def subgroupsize_limit_check(group, split_in, size_lim):
     return 0
  
 def fit_kde_and_mannwhitney(ctrl_subgroup, case_subgroup, b):
-
     ctrl_kde = KernelDensity(kernel='gaussian', bandwidth=b).fit(ctrl_subgroup.reshape(-1, 1))
     likelihood = ctrl_kde.score(case_subgroup.reshape(-1, 1), y = None)
     r = sts.mannwhitneyu(case_subgroup, ctrl_subgroup, method = 'auto', alternative='two-sided')
@@ -72,10 +71,11 @@ def fit_kde_and_mannwhitney(ctrl_subgroup, case_subgroup, b):
 def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_size_lim, perm_p_cutoff, b, f_par):
     likelihood_arr = []
     wrst_p_arr = []
+    cpms = convert_counts_to_cpm(gene_counts)
     genotype_cluster_df = pd.DataFrame(0, index=ifs.index, columns=case)
     for i in ifs.index.to_list():
-        selected_ctrls, ctrl_arr, filtered_ctrls = filter_samples_on_gene_cpm(f_par, i, tx2gene_dict, ctrl, ifs, gene_counts)
-        selected_cases, case_arr, filtered_cases = filter_samples_on_gene_cpm(f_par, i, tx2gene_dict, case, ifs, gene_counts)
+        selected_ctrls, ctrl_arr, filtered_ctrls = filter_samples_on_gene_cpm(f_par, i, tx2gene_dict, ctrl, ifs, cpms)
+        selected_cases, case_arr, filtered_cases = filter_samples_on_gene_cpm(f_par, i, tx2gene_dict, case, ifs, cpms)
         genotype_cluster_df.loc[i, filtered_cases] = None
         if((groupsize_limit_check(ctrl_arr, case_arr, cluster_size_lim)) == 0):
             wrst_p_arr.append(1)
