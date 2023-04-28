@@ -158,7 +158,7 @@ def main(argv):
     output_file = ''
     cluster_size_limit = 12
     b = ''
-    f_par = TRUE
+    f_par = True
     spit_cluster_matrix = ''   
     try:
         opts, args = getopt.getopt(argv,"hi:g:l:m:p:b:n:A:O:",["IFs_file=", "gene_counts_file=", "labels_file=", "tx2gene_file=", "perm_p_cutoff=", "b=", "n_small=", "spit_cluster_matrix=", "output_file="])
