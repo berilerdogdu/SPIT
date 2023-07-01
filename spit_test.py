@@ -135,7 +135,7 @@ def main(argv):
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
     parser.add_argument('-n', metavar='1000', type=int, default=1000, help='Number of iterations')
     parser.add_argument('-d', '--p_dom', metavar='0.75', type=float, default=0.75, help='Dominance selection threshold')
-    parser.add_argument('-n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
+    parser.add_argument('--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
     parser.add_argument('-I', metavar='dom_selected_ifs.txt', required=True, type=str, help='Output file path for dominance-selected isoform fractions (IFs)')
     parser.add_argument('-G', metavar='dom_selected_gene_counts.txt', required=True, type=str, help='Output file path for dominance-selected gene counts')
     parser.add_argument('-P', metavar='spit_test_min_p_values.txt', required=True, type=str, help='Output file path for minimum p-values from all iterations')
