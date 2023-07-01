@@ -178,10 +178,10 @@ def main(argv):
     parser.add_argument('-g', metavar='dom_selected_gene_counts.txt', required=True, type=str, help='Gene counts file (tsv)')
     parser.add_argument('-m', metavar='tx2gene.txt', required=True, type=str, help='Transcript to gene mapping file (tsv)')
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
-    parser.add_argument('-p_cutoff', metavar='0.05', required=True, type=float, help='p-value cutoff from SPIT Test permutations')
+    parser.add_argument('--p_cutoff', metavar='0.05', required=True, type=float, help='p-value cutoff from SPIT Test permutations')
     parser.add_argument('-b', '--bandwidth', metavar='0.09', type=float, default=0.09, help='p-value cutoff from SPIT Test permutations')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
-    parser.add_argument('-f_cpm', action='store_true', help='Apply filter-CPM thresholding')
+    parser.add_argument('--f_cpm', action='store_true', help='Apply filter-CPM thresholding')
     parser.add_argument('-A', metavar='spit_cluster_array.txt', required=True, type=str, help='Output file path for SPIT cluster array')
     parser.add_argument('-O', metavar='spit_out.txt', required=True, type=str, help='Output file path for candidate DTU genes')
     
