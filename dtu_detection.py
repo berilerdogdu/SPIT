@@ -182,7 +182,7 @@ def main(argv):
     parser.add_argument('-b', '--bandwidth', metavar='0.09', type=float, default=0.09, help='p-value cutoff from SPIT Test permutations')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
     parser.add_argument('--f_cpm', action='store_true', help='Apply filter-CPM thresholding')
-    parser.add_argument('-A', metavar='spit_cluster_array.txt', required=True, type=str, help='Output file path for SPIT cluster array')
+    parser.add_argument('-M', metavar='spit_cluster_matrix.txt', required=True, type=str, help='Output file path for SPIT cluster matrix')
     parser.add_argument('-O', metavar='spit_out.txt', required=True, type=str, help='Output file path for candidate DTU genes')
     
     args = parser.parse_args()
@@ -200,7 +200,7 @@ def main(argv):
     likelihood_cutoff = filter_likelihood_on_dmad(likelihood_arr, double_mad_scores)
     wrst_pos_genes, flagged_genes = find_and_flag_dtu_genes(IFs, likelihood_arr, likelihood_cutoff, wrst_p_arr, args.p_cutoff)
     write_final_results(wrst_pos_genes, flagged_genes, args.O)
-    genotype_cluster_df.to_csv(args.A, sep = '\t')
+    genotype_cluster_df.to_csv(args.M, sep = '\t')
 
 
 if __name__ == "__main__":
