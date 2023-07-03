@@ -70,7 +70,7 @@ def build_random_forest_regr(cluster_m_joint_dtu, cov_names, covs_arr, ifs_dtu_a
         result = permutation_importance(regr, tx_all_attr, tx_tif, n_repeats=100, random_state=42)
         importances = pd.DataFrame(
         result.importances.T,
-        columns=cov_names.append('spit_v'))
+        columns = cov_names + ['spit_v'])
         upper_quartile_arr = importances.apply(get_upper_quartile, axis = 0).to_numpy()
         lower_quartile_arr = importances.apply(get_lower_quartile, axis = 0).to_numpy()
         if(lower_quartile_arr[-1] > max(upper_quartile_arr[:-1])):
@@ -80,6 +80,7 @@ def build_random_forest_regr(cluster_m_joint_dtu, cov_names, covs_arr, ifs_dtu_a
                                         whiskerprops = dict(linestyle='-',linewidth=3.0, color='steelblue'),
                                         boxprops = dict(linestyle='-',linewidth=3.0, color='steelblue'),
                                         medianprops = dict(linestyle='-',linewidth=3.0, color='green'))
+            print(tx_ids[tx])
         elif(plot_file):
             ax = importances.plot.box(vert=False, whis=10, ax=axes[tx % 3, tx % 2],
                                     whiskerprops = dict(linestyle='-',linewidth=3.0, color='red'),
