@@ -127,7 +127,7 @@ def determine_perm_p_cutoff(min_perm_p_arr, p_values_file):
 
 def main(argv):
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser._optionals.title = 'Command-line arguments:'
     parser.add_argument('-i', metavar='filtered_ifs.txt', required=True, type=str, help='Isoform fractions file (tsv)')
     parser.add_argument('-g', metavar='filtered_gene_counts.txt', required=True, type=str, help='Gene counts file (tsv)')
