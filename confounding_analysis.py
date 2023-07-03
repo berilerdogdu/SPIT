@@ -80,7 +80,6 @@ def build_random_forest_regr(cluster_m_joint_dtu, cov_names, covs_arr, ifs_dtu_a
                                         whiskerprops = dict(linestyle='-',linewidth=3.0, color='steelblue'),
                                         boxprops = dict(linestyle='-',linewidth=3.0, color='steelblue'),
                                         medianprops = dict(linestyle='-',linewidth=3.0, color='green'))
-            print(tx_ids[tx])
         elif(plot_file):
             ax = importances.plot.box(vert=False, whis=10, ax=axes[tx % 3, tx % 2],
                                     whiskerprops = dict(linestyle='-',linewidth=3.0, color='red'),
