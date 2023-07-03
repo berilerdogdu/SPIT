@@ -27,18 +27,19 @@ def main(argv):
     parser.add_argument('-w', '--write', action='store_true', help='Write the number of transcripts & genes left after filtering all-zeroes to stdout.')
     
     args = parser.parse_args()    
-    tx_count_data = pd.read_csv(args.i, sep='\t', index_col='feature_id')
+    tx_count_data = pd.read_csv(args.i, sep='\t', index_col=0)
     tx2gene = pd.read_csv(args.m, sep = '\t')
     txs_w_genes = tx_count_data.join(tx2gene.set_index('tx_id'))
     if(args.write):
-        print("Input number of transcripts: ", tx_count_data.shape[0])
-        print("Input number of genes: ", len(tx_count_data.gene_id.unique()))
+        print("Input number of transcripts: ", txs_w_genes.shape[0])
+        print("Input number of genes: ", len(txs_w_genes.gene_id.unique()))
     tx_count_data = tx_count_data[tx_count_data.values.sum(axis=1) != 0]
+    txs_w_genes = tx_count_data.join(tx2gene.set_index('tx_id'))
     if(args.write):
         print("After filtering out all-zeros:")
-        print("\tNumber of transcripts", len(tx_count_data.index))
-        print("\tNumber of genes: ", len(tx_count_data_w_genes.gene_id.unique()))
-    IFs, gene_level_counts = convert_counts_to_IF_and_gene_level(tx_count_data)
+        print("\tNumber of transcripts", len(txs_w_genes.index))
+        print("\tNumber of genes: ", len(txs_w_genes.gene_id.unique()))
+    IFs, gene_level_counts = convert_counts_to_IF_and_gene_level(txs_w_genes)
     IFs.to_csv(args.F, sep = '\t')
     gene_level_counts.to_csv(args.G, sep = '\t')
 
