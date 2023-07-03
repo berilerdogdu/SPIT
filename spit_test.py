@@ -123,7 +123,6 @@ def determine_perm_p_cutoff(min_perm_p_arr, p_values_file):
     with open(p_values_file, 'w') as f:
         for i in min_perm_p_arr:
             f.write("%s\n" % i)
-    print("min p-value over all iterations: ", np.min(np.array(min_perm_p_arr)))
     return p_cutoff
 
 def main(argv):
