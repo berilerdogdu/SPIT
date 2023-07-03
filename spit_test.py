@@ -80,6 +80,7 @@ def mannwhitneyu_permutation(IFs, ctrl_samples, num_of_it, n_small):
     min_perm_p_arr = []
     perm_p_arr = []
     sampled_txs = set()
+    print("Chewing in progress:")
     for it in range(1, num_of_it+1):
         out = '\r'+ str(it) + " iterations completed."
         if (it == num_of_it):
