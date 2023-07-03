@@ -1,4 +1,4 @@
-id	sex	condition	age
+id	sex_cat	condition	age
 V101	male	0	50
 V174	female	0	82
 V3	male	0	70
