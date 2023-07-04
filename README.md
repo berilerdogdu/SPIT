@@ -15,7 +15,7 @@ SPIT is equally effective on relatively homogeneous populations, and proves to b
 
 ### How to use SPIT?
 
-An extensive step-by-step guide that demonstrates the application of SPIT using a mock dataset is provided at https://colab.research.google.com/drive/1u3NpleqcAfNz_0EAgO2UHItozd9PsF1w?usp=sharing.
+An extensive step-by-step guide that demonstrates the application of SPIT using a mock dataset is provided at FILLIN.
 
 Users can also directly upload their datasets into this Colab environment and easily run SPIT online.
 
