@@ -1,3 +1,16 @@
+#!/usr/bin/env python3
+
+"""
+Description:
+    This module helps control for the confounding factors inherently present in the experimental design. By fitting a random forest regressor on each detected DTU transcript the module determines which covariates might be contributing into observable variance in isoform fraction (IF) values.
+Usage:
+    ./confounding_analysis.py <dominance_selected_ifs> -l <pheno> --cluster_matrix <spit_cluster_matrix> -o <spit_out> -M <controlled_spit_cluster_matrix> -O <controlled_spit_out> -P <importance_score_plots>
+Author:
+    Beril Erdogdu
+Date:
+    July 08, 2023
+"""
+
 import sys
 import argparse
 import warnings

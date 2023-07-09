@@ -1,3 +1,16 @@
+#!/usr/bin/env python3
+
+"""
+Description:
+    This module performs the SPIT-Test. The test randomly splits the control group in half, and identifies the most significant difference in isoform fractions between the two halves. The observations from this process can then be used to compare candidate DTU events in terms of their significance.
+Usage:
+    ./spit_test.py -i <filtered_ifs> -g <filtered_gene_counts> -l <pheno> -I <dominance_selected_ifs> -G <dominance_selected_gene_counts> -P <sampled_p_values>
+Author:
+    Beril Erdogdu
+Date:
+    July 08, 2023
+"""
+
 import sys
 import argparse
 import numpy as np

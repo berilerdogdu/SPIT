@@ -1,3 +1,16 @@
+#!/usr/bin/env python3
+
+"""
+Description:
+    Retrieves a p-value threshold to be used in detecting significant DTU events. This module determines p-value threshold based on the user-defined parameter K and is obtained as the "K x N"-th smallest p-value among the N sampled by SPIT-Test.
+Usage:
+    ./get_p_cutoff.py -k <K> -p <sampled_p_values>
+Author:
+    Beril Erdogdu
+Date:
+    July 08, 2023
+"""
+
 import sys
 import argparse
 import numpy as np

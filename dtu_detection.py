@@ -1,3 +1,16 @@
+#!/usr/bin/env python3
+
+"""
+Description:
+    This module fits KDE on Isoform Fraction (IF) distributions to search for separation between- case and control samples. P-value threshold is then used to select significant events out of all candidate DTU events.
+Usage:
+    ./dtu_detection.py -i <dominance_selected_ifs.txt> -g <dominance_selected_gene_counts.txt> -m <tx2gene> -l <pheno> -M <spit_cluster_matrix.txt> -O <spit_out.txt>
+Author:
+    Beril Erdogdu
+Date:
+    July 08, 2023
+"""
+
 import sys
 import argparse
 import random

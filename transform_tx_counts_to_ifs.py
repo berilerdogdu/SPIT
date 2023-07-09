@@ -1,3 +1,16 @@
+#!/usr/bin/env python3
+
+"""
+Description:
+    Directly convert transcript counts to Isoform Fractions (IF). Transcripts with no non-zero counts will still be filtered out. This module is useful when skipping pre-filtering step.
+Usage:
+    ./transform_tx_counts_to_ifs.py -i <tx_counts.txt> -m <tx2gene.txt> -F <filtered_ifs.txt> -G <filtered_gene_counts.txt> --write
+Author:
+    Beril Erdogdu
+Date:
+    July 08, 2023
+"""
+
 import sys
 import argparse
 import numpy as np
