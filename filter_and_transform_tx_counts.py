@@ -1,3 +1,16 @@
+#!/usr/bin/env python3
+
+"""
+Description:
+    This module performs pre-filtering of the input transcripts. The protocol implemented in this modules follows closely the filtering criteria defined in DRIMSeq (Nowicka M. et al, 2016) and involves filtering by Counts Per Million (CPM), Sample Count, Isoform Fraction (IF), Transcrit Count Per Gene.
+Usage:
+    ./filter_and_transform_tx_counts.py -i <tx_counts> -m <tx2gene> -l <pheno> -T <filtered_tx_counts> -F <filtered_ifs> -G <filtered_gene_counts> --write
+Author:
+    Beril Erdogdu
+Date:
+    July 08, 2023
+"""
+
 import sys
 import argparse
 import numpy as np
