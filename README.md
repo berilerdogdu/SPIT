@@ -49,3 +49,5 @@ The output PDF file (venns.pdf) will include the optimal parameters at each iter
 
 ##### If you use SPIT, please cite:
 Erdogdu, B., Varabyou, A., Hicks, S.C., Salzberg, S.L. & Pertea, M. Detecting differential transcript usage in complex diseases with SPIT. bioRxiv, 2023.2007.2010.548289 (2023)
+
+##### Please use [this Google group](https://groups.google.com/g/spit_dtu) to post your questions, comments, or bug reports.
