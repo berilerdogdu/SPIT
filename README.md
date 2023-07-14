@@ -48,3 +48,4 @@ python LOOCV.py -m tx2gene_file.txt -P venns.pdf
 The output PDF file (venns.pdf) will include the optimal parameters at each iteratioin of the LOOCV process along with corresponding true positive and false positive rates and *F*-scores. 
 
 ##### If you use SPIT, please cite:
+Erdogdu, B., Varabyou, A., Hicks, S.C., Salzberg, S.L. & Pertea, M. Detecting differential transcript usage in complex diseases with SPIT. bioRxiv, 2023.2007.2010.548289 (2023)
