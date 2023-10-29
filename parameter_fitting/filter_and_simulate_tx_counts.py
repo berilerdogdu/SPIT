@@ -125,7 +125,7 @@ def main(argv):
     filtered_count_data_on_isoform_count = tx_count_data.loc[filtered_ind_on_isoform_count,:]
     on_iso_count = filtered_count_data_on_isoform_count.join(tx2gene.set_index('tx_id'))
     if(args.write):
-        print("After filtering on isoforom count:")
+        print("After filtering on isoform count:")
         print("\tNumber of transcripts", len(filtered_count_data_on_isoform_count.index))
         print("\tNumber of genes: ", len(on_iso_count.gene_id.unique()))
     filtered_IF_data_on_isoform_count = IFs.loc[filtered_ind_on_isoform_count,:]
