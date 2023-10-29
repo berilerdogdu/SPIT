@@ -18,7 +18,7 @@ import math
 import pandas as pd
 import numpy as np
 import scipy.stats as sts
-from collections import defaultdict
+from collections import defaultdict, Counter
 from sklearn.neighbors import KernelDensity
 from scipy.signal import argrelextrema
 from matplotlib import pyplot as plt
@@ -173,6 +173,38 @@ def find_and_flag_dtu_genes(ifs, likelihood_arr, likelihood_cutoff, wrst_p_arr, 
     flagged_genes = likelihood_outlier_genes.intersection(wrst_pos_genes)
     return wrst_pos_genes, flagged_genes
 
+def compute_infReps_stats(infReps, tx_index, tx2gene_dict, ctrl, case, cluster_size_lim, p_cutoff, b, f_cpm):
+    infReps_stacked = np.stack(infReps, axis=2)
+    infReps_transposed = np.transpose(infReps_stacked, axes=(1, 0, 2))
+    infReps_dtu_genes = []
+    infReps_flagged_genes = []
+    for inf in infReps_transposed:
+        inf_df = pd.DataFrame(inf, columns = col_names, index = tx_index)
+        inf_df['gene_id'] = IFs_reduced.gene_id
+        inf_IFs, inf_gene_counts = convert_counts_to_IF_and_gene_level(inf_df)
+        inf_likelihood_arr, inf_wrst_p_arr, inf_genotype_cluster_df = compute_double_stats(inf_IFs, inf_gene_counts, tx2gene_dict, ctrl, case, cluster_size_lim, p_cutoff, b, f_cpm)
+        inf_wrst_pos_genes, inf_flagged_genes = find_and_flag_dtu_genes(inf_IFs, inf_likelihood_arr, likelihood_cutoff, inf_wrst_p_arr, p_cutoff)
+        infReps_dtu_genes += inf_wrst_pos_genes
+        infReps_flagged_genes += inf_flagged_genes
+    # infReps_dtu_genes += wrst_pos_genes
+    # infReps_flagged_genes += flagged_genes
+    # dtu_genes_counts = Counter(infReps_dtu_genes)
+    # dtu_genes_stable = [g for g, count in dtu_genes_counts.items() if count > int(len(infReps_transposed)*0.75)]
+    # flagged_gene_counts = Counter(infReps_flagged_genes)
+    # flagged_genes_stable = [g for g, count in flagged_gene_counts.items() if count > int(len(infReps_transposed)*0.75)]
+    # wrst_pos_genes = dtu_genes_stable
+    # flagged_genes = flagged_genes_stable
+    return infReps_dtu_genes, infReps_flagged_genes
+
+def get_stable_dtu(infReps_dtu_genes, infReps_flagged_genes, wrst_pos_genes, flagged_genes):
+    infReps_dtu_genes += wrst_pos_genes
+    infReps_flagged_genes += flagged_genes
+    dtu_genes_counts = Counter(infReps_dtu_genes)
+    dtu_genes_stable = [g for g, count in dtu_genes_counts.items() if count > int(len(infReps_transposed)*0.75)]
+    flagged_gene_counts = Counter(infReps_flagged_genes)
+    flagged_genes_stable = [g for g, count in flagged_gene_counts.items() if count > int(len(infReps_transposed)*0.75)]
+    return dtu_genes_stable, flagged_genes_stable
+
 def write_final_results(wrst_pos_genes, flagged_genes, output):
     with open(output, 'w') as f:
         for g in wrst_pos_genes:
@@ -191,6 +223,7 @@ def main(argv):
     parser.add_argument('-g', metavar='dom_selected_gene_counts.txt', required=True, type=str, help='Gene counts file (tsv)')
     parser.add_argument('-m', metavar='tx2gene.txt', required=True, type=str, help='Transcript to gene mapping file (tsv)')
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
+    parser.add_argument('--infReps', metavar='./quantification_data/infReps', type=str, default=None, help='Directory path for inferential replicate files')
     parser.add_argument('--p_cutoff', metavar='0.05', required=True, type=float, help='p-value cutoff from SPIT Test permutations')
     parser.add_argument('-b', '--bandwidth', metavar='0.09', type=float, default=0.09, help='choice of bandwidth for kernel density estimation')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
@@ -212,6 +245,17 @@ def main(argv):
     double_mad_scores = MADsfromMedian(likelihood_arr)
     likelihood_cutoff = filter_likelihood_on_dmad(likelihood_arr, double_mad_scores)
     wrst_pos_genes, flagged_genes = find_and_flag_dtu_genes(IFs, likelihood_arr, likelihood_cutoff, wrst_p_arr, args.p_cutoff)
+    if(args.infReps):
+        all_samples = pheno.id.to_list()
+        infReps = []
+        for i in all_samples:
+            infReps_sample = pd.read_csv(infReps_dir + "/infReps_sample_" + i + ".txt", sep = '\t', index_col = 0)
+            infReps_sample = infReps_sample.loc[IFs.index.to_list()].to_numpy()
+            infReps.append(infReps_sample)
+        infReps_dtu_genes, infReps_flagged_genes = compute_infReps_stats(infReps, IFs_reduced.index, tx2gene_dict, ctrl_samples, case_samples, args.n_small, args.p_cutoff, args.bandwidth, args.f_cpm)
+        dtu_genes_stable, flagged_genes_stable = get_stable_dtu(infReps_dtu_genes, infReps_flagged_genes, wrst_pos_genes, flagged_genes)
+        wrst_pos_genes = dtu_genes_stable
+        flagged_genes = flagged_genes_stable
     write_final_results(wrst_pos_genes, flagged_genes, args.O)
     genotype_cluster_df.to_csv(args.M, sep = '\t')
 
