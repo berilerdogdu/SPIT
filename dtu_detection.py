@@ -186,14 +186,6 @@ def compute_infReps_stats(infReps, tx_index, tx2gene_dict, ctrl, case, cluster_s
         inf_wrst_pos_genes, inf_flagged_genes = find_and_flag_dtu_genes(inf_IFs, inf_likelihood_arr, likelihood_cutoff, inf_wrst_p_arr, p_cutoff)
         infReps_dtu_genes += inf_wrst_pos_genes
         infReps_flagged_genes += inf_flagged_genes
-    # infReps_dtu_genes += wrst_pos_genes
-    # infReps_flagged_genes += flagged_genes
-    # dtu_genes_counts = Counter(infReps_dtu_genes)
-    # dtu_genes_stable = [g for g, count in dtu_genes_counts.items() if count > int(len(infReps_transposed)*0.75)]
-    # flagged_gene_counts = Counter(infReps_flagged_genes)
-    # flagged_genes_stable = [g for g, count in flagged_gene_counts.items() if count > int(len(infReps_transposed)*0.75)]
-    # wrst_pos_genes = dtu_genes_stable
-    # flagged_genes = flagged_genes_stable
     return infReps_dtu_genes, infReps_flagged_genes
 
 def get_stable_dtu(infReps_dtu_genes, infReps_flagged_genes, wrst_pos_genes, flagged_genes):
