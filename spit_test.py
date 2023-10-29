@@ -146,9 +146,9 @@ def main(argv):
     parser.add_argument('-i', metavar='filtered_ifs.txt', required=True, type=str, help='Isoform fractions file (tsv)')
     parser.add_argument('-g', metavar='filtered_gene_counts.txt', required=True, type=str, help='Gene counts file (tsv)')
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
-    parser.add_argument('-n', metavar='1000', type=int, default=1000, help='Number of iterations')
+    parser.add_argument('--n_iter', metavar='1000', type=int, default=1000, help='Number of iterations')
     parser.add_argument('-d', '--p_dom', metavar='0.75', type=float, default=0.75, help='Dominance selection threshold')
-    parser.add_argument('--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
+    parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
     parser.add_argument('-I', metavar='dominance_selected_ifs.txt', type=str, help='Output file path for dominance-selected isoform fractions (IFs)')
     parser.add_argument('-G', metavar='dominance_selected_gene_counts.txt', type=str, help='Output file path for dominance-selected gene counts')
     parser.add_argument('-P', metavar='spit_test_min_p_values.txt', required=True, type=str, help='Output file path for minimum p-values from all iterations')
@@ -167,7 +167,7 @@ def main(argv):
     IFs_selected.to_csv(args.I, sep = '\t')
     gene_counts_selected = gene_counts[gene_counts.index.isin(selected_dom_iso_genes)]
     gene_counts_selected.to_csv(args.G, sep = '\t')
-    min_perm_p_arr = mannwhitneyu_permutation(IFs_selected, ctrl_samples, args.n, args.n_small)
+    min_perm_p_arr = mannwhitneyu_permutation(IFs_selected, ctrl_samples, args.n_iter, args.n_small)
     p_cutoff = determine_perm_p_cutoff(min_perm_p_arr, args.P)
 
 
