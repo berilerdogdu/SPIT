@@ -130,11 +130,11 @@ def main(argv):
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser._optionals.title = 'Command-line arguments:'
-    parser.add_argument('-i', metavar='dom_selected_ifs.txt', required=True, type=str, help='Isoform fractions file (tsv)')
+    parser.add_argument('-i', metavar='dom_selected_ifs.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "dominance_selected_ifs.txt"), help='Isoform fractions file (tsv)')
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
-    parser.add_argument('--cluster_matrix', metavar='spit_cluster_matrix.txt', required=True, type=str, help='SPIT cluster matrix')
+    parser.add_argument('--cluster_matrix', metavar='spit_cluster_matrix.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "spit_cluster_matrix.txt"), help='SPIT cluster matrix')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
-    parser.add_argument('-o', metavar='spit_out.txt', required=True, type=str, help='SPIT candidate DTU genes')
+    parser.add_argument('-o', metavar='spit_out.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "spit_out.txt"), help='SPIT candidate DTU genes')
     parser.add_argument('-M', metavar='controlled_spit_cluster_matrix.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "controlled_spit_cluster_matrix.txt"), help='Output file path for updated SPIT cluster matrix after confounding analysis')
     parser.add_argument('-O', metavar='controlled_spit_out.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "controlled_spit_out.txt"), help='Output file path for updated SPIT candidate DTU genes after confounding analysis')
     parser.add_argument('-P', metavar='importance_score_plots.pdf', type=str, const=os.path.join(os.getcwd(), "SPIT_analysis", "controlled_spit_cluster_matrix.txt"), nargs='?', default=None, help='PDF file for plots')
