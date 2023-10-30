@@ -78,8 +78,6 @@ def main(argv):
     parser.add_argument('-s', '--genefilter_sample', metavar='10', type=int, default=10, help='Each gene must have a read count of at least c in at least s samples.')
     
     args = parser.parse_args()
-    print(args.O)
-    print(os.path.join(args.O, "SPIT_analysis", "filtered_tx_counts.txt"))
     tx_count_data = pd.read_csv(args.i, sep='\t', index_col=0)
     tx2gene = pd.read_csv(args.m, sep = '\t')
     txs_w_genes = tx_count_data.join(tx2gene.set_index('tx_id'))
