@@ -212,8 +212,8 @@ def main(argv):
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser._optionals.title = 'Command-line arguments:'
-    parser.add_argument('-i', metavar='dom_selected_ifs.txt', required=True, type=str, help='Isoform fractions file (tsv)')
-    parser.add_argument('-g', metavar='dom_selected_gene_counts.txt', required=True, type=str, help='Gene counts file (tsv)')
+    parser.add_argument('-i', metavar='dom_selected_ifs.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "dominance_selected_ifs.txt"), help='Isoform fractions file (tsv)')
+    parser.add_argument('-g', metavar='dom_selected_gene_counts.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "dominance_selected_gene_counts.txt"), help='Gene counts file (tsv)')
     parser.add_argument('-m', metavar='tx2gene.txt', required=True, type=str, help='Transcript to gene mapping file (tsv)')
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
     parser.add_argument('--infReps', metavar='./quantification_data/infReps', type=str, default=None, help='Directory path for inferential replicate files')
