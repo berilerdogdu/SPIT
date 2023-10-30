@@ -36,7 +36,7 @@ def main(argv):
     parser._optionals.title = 'Command-line arguments:'
     parser.add_argument('-i', metavar='tx_counts.txt', required=True, type=str, help='Transcript level counts file (tsv)')
     parser.add_argument('-m', metavar='tx2gene.txt', required=True, type=str, help='Transcript to gene mapping file (tsv)')
-    parser.add_argument('O', '--output_dir', metavar='/path', type=str, default = os.getcwd(), help = "Output directory path where the SPIT output folder will be written")
+    parser.add_argument('-O', '--output_dir', metavar='/path', type=str, default = os.getcwd(), help = "Output directory path where the SPIT output folder will be written")
     parser.add_argument('-w', '--write', action='store_true', help='Write the number of transcripts & genes left after filtering all-zeroes to stdout.')
     
     args = parser.parse_args()    
