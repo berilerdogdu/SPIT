@@ -144,8 +144,8 @@ def main(argv):
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser._optionals.title = 'Command-line arguments:'
-    parser.add_argument('-i', metavar='filtered_ifs.txt', required=True, type=str, help='Isoform fractions file (tsv)')
-    parser.add_argument('-g', metavar='filtered_gene_counts.txt', required=True, type=str, help='Gene counts file (tsv)')
+    parser.add_argument('-i', metavar='filtered_ifs.txt', type=str, default=os.path.join(os.getcwd(), "SPIT_analysis", "filtered_ifs.txt"), help='Isoform fractions file (tsv)')
+    parser.add_argument('-g', metavar='filtered_gene_counts.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "filtered_gene_counts.txt"), help='Gene counts file (tsv)')
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
     parser.add_argument('--n_iter', metavar='1000', type=int, default=1000, help='Number of iterations')
     parser.add_argument('-d', '--p_dom', metavar='0.75', type=float, default=0.75, help='Dominance selection threshold')
