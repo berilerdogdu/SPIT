@@ -65,12 +65,12 @@ def get_lower_quartile(data):
     lower_quartile = np.percentile(data, 25)
     return lower_quartile
 
-def build_random_forest_regr(cluster_m_joint_dtu, cov_names, covs_arr, ifs_dtu_arr, n_small, plot_file):
+def build_random_forest_regr(cluster_m_joint_dtu, cov_names, covs_arr, ifs_dtu_arr, n_small, plot_bool, plot_file):
     regr = RandomForestRegressor(n_estimators = 200, max_depth=1, criterion='absolute_error', bootstrap = True, min_samples_split = n_small)
     cluster_m_joint_dtu_arr = cluster_m_joint_dtu.to_numpy()
     tx_ids = cluster_m_joint_dtu.index.to_list()
     sig_tx_inds = []
-    if(plot_file):
+    if(plot_bool):
         pdf_pages = pdf.PdfPages(plot_file)
         fig, axes = plt.subplots(nrows=3, ncols=2, gridspec_kw={'hspace': 0.3, 'wspace': 0.5})
     for tx in tqdm(range(len(cluster_m_joint_dtu_arr))):
@@ -134,10 +134,11 @@ def main(argv):
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
     parser.add_argument('--cluster_matrix', metavar='spit_cluster_matrix.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "spit_cluster_matrix.txt"), help='SPIT cluster matrix')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
-    parser.add_argument('-o', metavar='spit_out.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "spit_out.txt"), help='SPIT candidate DTU genes')
-    parser.add_argument('-M', metavar='controlled_spit_cluster_matrix.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "controlled_spit_cluster_matrix.txt"), help='Output file path for updated SPIT cluster matrix after confounding analysis')
-    parser.add_argument('-O', metavar='controlled_spit_out.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "controlled_spit_out.txt"), help='Output file path for updated SPIT candidate DTU genes after confounding analysis')
-    parser.add_argument('-P', metavar='importance_score_plots.pdf', type=str, const=os.path.join(os.getcwd(), "SPIT_analysis", "controlled_spit_cluster_matrix.txt"), nargs='?', default=None, help='PDF file for plots')
+    parser.add_argument('--init_out', metavar='spit_out.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "spit_out.txt"), help='SPIT candidate DTU genes')
+    parser.add_argument('O', '--output_dir', metavar='/path', type=str, default = os.getcwd(), help = "Output directory path where the SPIT output folder will be written")
+    # parser.add_argument('-M', metavar='controlled_spit_cluster_matrix.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "controlled_spit_cluster_matrix.txt"), help='Output file path for updated SPIT cluster matrix after confounding analysis')
+    # parser.add_argument('-O', metavar='controlled_spit_out.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "controlled_spit_out.txt"), help='Output file path for updated SPIT candidate DTU genes after confounding analysis')
+    parser.add_argument('-P', action='store_true', const=os.path.join(os.getcwd(), "SPIT_analysis", "controlled_spit_cluster_matrix.txt"), nargs='?', default=None, help='Plot permutation importances')
 
     args = parser.parse_args()
     warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -155,8 +156,8 @@ def main(argv):
     cluster_m_joint_dtu = make_joint_cluster_mat(spit_cluster_m, pheno_df)
     ifs_dtu_arr = make_if_arr(IFs_df, cluster_m_joint_dtu)
     cov_names, covs_arr = make_cov_arr(pheno_df)
-    sig_tx_inds = build_random_forest_regr(cluster_m_joint_dtu, cov_names, covs_arr, ifs_dtu_arr, args.n_small, args.P)
-    write_post_filter_results(sig_tx_inds, cluster_m_joint_dtu, spit_cluster_m, tx2gene_dict, args.o, args.M, args.O)
+    sig_tx_inds = build_random_forest_regr(cluster_m_joint_dtu, cov_names, covs_arr, ifs_dtu_arr, args.n_small, args.P, os.path.join(args.O, "SPIT_analysis", "permutation_importance_plots.pdf"))
+    write_post_filter_results(sig_tx_inds, cluster_m_joint_dtu, spit_cluster_m, tx2gene_dict, args.o, os.path.join(args.O, "SPIT_analysis", "controlled_spit_cluster_matrix.txt"), os.path.join(args.O, "SPIT_analysis", "controlled_spit_out.txt"))
 
 
 if __name__ == "__main__":
