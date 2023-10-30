@@ -12,6 +12,7 @@ Date:
 """
 
 import sys
+import os
 import argparse
 import numpy as np
 import pandas as pd
@@ -69,9 +70,9 @@ def main(argv):
     parser.add_argument('-i', metavar='tx_counts.txt', required=True, type=str, help='Transcript level counts file (tsv)')
     parser.add_argument('-m', metavar='tx2gene.txt', required=True, type=str, help='Transcript to gene mapping file (tsv)')
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
-    parser.add_argument('-T', metavar='filtered_tx_counts.txt', required=True, type=str, help='Output file path for filtered transcript counts')
-    parser.add_argument('-F', metavar='filtered_ifs.txt', required=True, type=str, help='Output file path for filtered isoform fractions (IFs)')
-    parser.add_argument('-G', metavar='filtered_gene_counts.txt', required=True, type=str, help='Output file path for filtered gene counts')
+    parser.add_argument('-T', metavar='filtered_tx_counts.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "filtered_tx_counts.txt"), help='Output file path for filtered transcript counts')
+    parser.add_argument('-F', metavar='filtered_ifs.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "filtered_ifs.txt"), help='Output file path for filtered isoform fractions (IFs)')
+    parser.add_argument('-G', metavar='filtered_gene_counts.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "filtered_gene_counts.txt"), help='Output file path for filtered gene counts')
     parser.add_argument('-w', '--write', action='store_true', help='Write the number of transcripts & genes left after each filtering step to stdout.')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
     parser.add_argument('-p', '--pr_fraction', metavar='0.2', type=float, default=0.2, help='Each transcript must have a positive read count in at least a fraction p_r of the samples in both the case and control groups.')
