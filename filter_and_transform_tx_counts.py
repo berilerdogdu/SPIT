@@ -69,7 +69,7 @@ def main(argv):
     parser.add_argument('-i', metavar='tx_counts.txt', required=True, type=str, help='Transcript level counts file (tsv)')
     parser.add_argument('-m', metavar='tx2gene.txt', required=True, type=str, help='Transcript to gene mapping file (tsv)')
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
-    parser.add_argument('-O', '--output_dir', metavar='/path_to_output_dir/', type=str, default = os.getcwd(), help = "Output directory path where the SPIT output folder will be written")
+    parser.add_argument('-O', metavar='/path_to_output_dir/', type=str, default = os.getcwd(), help = "Output directory path where the SPIT output folder will be written")
     parser.add_argument('-w', '--write', action='store_true', help='Write the number of transcripts & genes left after each filtering step to stdout.')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
     parser.add_argument('-p', '--pr_fraction', metavar='0.2', type=float, default=0.2, help='Each transcript must have a positive read count in at least a fraction p_r of the samples in both the case and control groups.')
