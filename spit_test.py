@@ -150,7 +150,7 @@ def main(argv):
     parser.add_argument('--n_iter', metavar='100', type=int, default=100, help='Number of iterations')
     parser.add_argument('-d', '--p_dom', metavar='0.75', type=float, default=0.75, help='Dominance selection threshold')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
-    parser.add_argument('-O', '--output_dir', metavar='/path', type=str, default = os.getcwd(), help = "Output directory path where the SPIT output folder will be written")
+    parser.add_argument('-O', '--output_dir', type=str, default = os.getcwd(), help = "Output directory path where the SPIT output folder will be written")
     args = parser.parse_args()
     IFs = pd.read_csv(args.i, sep='\t', index_col=0)
     tx_names = list(IFs.index)
