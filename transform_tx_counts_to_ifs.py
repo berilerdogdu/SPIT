@@ -36,8 +36,7 @@ def main(argv):
     parser._optionals.title = 'Command-line arguments:'
     parser.add_argument('-i', metavar='tx_counts.txt', required=True, type=str, help='Transcript level counts file (tsv)')
     parser.add_argument('-m', metavar='tx2gene.txt', required=True, type=str, help='Transcript to gene mapping file (tsv)')
-    parser.add_argument('-F', metavar='filtered_ifs.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "filtered_ifs.txt"), help='Output file path for isoform fractions (IFs)')
-    parser.add_argument('-G', metavar='filtered_gene_counts.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "filtered_gene_counts.txt"), help='Output file path for gene counts')
+    parser.add_argument('O', '--output_dir', metavar='/path', type=str, default = os.getcwd(), help = "Output directory path where the SPIT output folder will be written")
     parser.add_argument('-w', '--write', action='store_true', help='Write the number of transcripts & genes left after filtering all-zeroes to stdout.')
     
     args = parser.parse_args()    
@@ -54,8 +53,8 @@ def main(argv):
         print("\tNumber of transcripts", len(txs_w_genes.index))
         print("\tNumber of genes: ", len(txs_w_genes.gene_id.unique()))
     IFs, gene_level_counts = convert_counts_to_IF_and_gene_level(txs_w_genes)
-    IFs.to_csv(args.F, sep = '\t')
-    gene_level_counts.to_csv(args.G, sep = '\t')
+    IFs.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_ifs.txt"), sep = '\t')
+    gene_level_counts.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_gene_counts.txt"), sep = '\t')
 
 
 if __name__ == "__main__":
