@@ -136,7 +136,7 @@ def main(argv):
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
     parser.add_argument('--init_out', metavar='spit_out.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "spit_out.txt"), help='SPIT candidate DTU genes')
     parser.add_argument('O', '--output_dir', metavar='/path', type=str, default = os.getcwd(), help = "Output directory path where the SPIT output folder will be written")
-    parser.add_argument('-P', action='store_true', const=os.path.join(os.getcwd(), "SPIT_analysis", "controlled_spit_cluster_matrix.txt"), nargs='?', default=None, help='Plot permutation importances')
+    parser.add_argument('-P', action='store_true', help='Plot permutation importances')
 
     args = parser.parse_args()
     warnings.simplefilter(action='ignore', category=FutureWarning)
