@@ -147,12 +147,10 @@ def main(argv):
     parser.add_argument('-i', metavar='filtered_ifs.txt', type=str, default=os.path.join(os.getcwd(), "SPIT_analysis", "filtered_ifs.txt"), help='Isoform fractions file (tsv)')
     parser.add_argument('-g', metavar='filtered_gene_counts.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "filtered_gene_counts.txt"), help='Gene counts file (tsv)')
     parser.add_argument('-l', metavar='labels.txt', required=True, type=str, help='Labels/metadata file (tsv)')
-    parser.add_argument('--n_iter', metavar='1000', type=int, default=1000, help='Number of iterations')
+    parser.add_argument('--n_iter', metavar='100', type=int, default=100, help='Number of iterations')
     parser.add_argument('-d', '--p_dom', metavar='0.75', type=float, default=0.75, help='Dominance selection threshold')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
-    parser.add_argument('-I', metavar='dominance_selected_ifs.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "dominance_selected_ifs.txt"), help='Output file path for dominance-selected isoform fractions (IFs)')
-    parser.add_argument('-G', metavar='dominance_selected_gene_counts.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "dominance_selected_gene_counts.txt"), help='Output file path for dominance-selected gene counts')
-    parser.add_argument('-P', metavar='spit_test_min_p_values.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "spit_test_min_p_values.txt"), help='Output file path for minimum p-values from all iterations')
+    pareser.add_argument('O', '--output_dir', metavar='/path', type=str, default = os.getcwd(), help = "Output directory path where the SPIT output folder will be written")
     args = parser.parse_args()
     IFs = pd.read_csv(args.i, sep='\t', index_col=0)
     tx_names = list(IFs.index)
@@ -164,11 +162,11 @@ def main(argv):
     case_samples = pheno[pheno.condition == 1].id.to_list()
     selected_dom_iso_genes = select_genes_w_dom_iso(IFs, ctrl_samples, gene_names, args.p_dom)
     IFs_selected = IFs[IFs.gene_id.isin(selected_dom_iso_genes)]
-    IFs_selected.to_csv(args.I, sep = '\t')
+    IFs_selected.to_csv(os.path.join(args.O, "SPIT_analysis", "dominance_selected_ifs.txt"), sep = '\t')
     gene_counts_selected = gene_counts[gene_counts.index.isin(selected_dom_iso_genes)]
-    gene_counts_selected.to_csv(args.G, sep = '\t')
+    gene_counts_selected.to_csv(os.path.join(args.O, "SPIT_analysis", "dominance_selected_gene_counts.txt"), sep = '\t')
     min_perm_p_arr = mannwhitneyu_permutation(IFs_selected, ctrl_samples, args.n_iter, args.n_small)
-    p_cutoff = determine_perm_p_cutoff(min_perm_p_arr, args.P)
+    p_cutoff = determine_perm_p_cutoff(min_perm_p_arr, os.path.join(args.O, "SPIT_analysis", "spit_test_min_p_values.txt"))
 
 
 if __name__ == "__main__":
