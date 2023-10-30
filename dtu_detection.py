@@ -12,6 +12,7 @@ Date:
 """
 
 import sys
+import os
 import argparse
 import random
 import math
@@ -220,8 +221,8 @@ def main(argv):
     parser.add_argument('-b', '--bandwidth', metavar='0.09', type=float, default=0.09, help='choice of bandwidth for kernel density estimation')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
     parser.add_argument('--f_cpm', action='store_true', help='Apply filter-CPM thresholding')
-    parser.add_argument('-M', metavar='spit_cluster_matrix.txt', required=True, type=str, help='Output file path for SPIT cluster matrix')
-    parser.add_argument('-O', metavar='spit_out.txt', required=True, type=str, help='Output file path for candidate DTU genes')
+    parser.add_argument('-M', metavar='spit_cluster_matrix.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "spit_cluster_matrix.txt"), help='Output file path for SPIT cluster matrix')
+    parser.add_argument('-O', metavar='spit_out.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "spit_out.txt"), help='Output file path for candidate DTU genes')
     
     args = parser.parse_args()
     IFs = pd.read_csv(args.i, sep='\t', index_col=0)
