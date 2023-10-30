@@ -12,6 +12,7 @@ Date:
 """
 
 import sys
+import os
 import argparse
 import numpy as np
 import pandas as pd
@@ -149,10 +150,9 @@ def main(argv):
     parser.add_argument('--n_iter', metavar='1000', type=int, default=1000, help='Number of iterations')
     parser.add_argument('-d', '--p_dom', metavar='0.75', type=float, default=0.75, help='Dominance selection threshold')
     parser.add_argument('-n', '--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups')
-    parser.add_argument('-I', metavar='dominance_selected_ifs.txt', type=str, help='Output file path for dominance-selected isoform fractions (IFs)')
-    parser.add_argument('-G', metavar='dominance_selected_gene_counts.txt', type=str, help='Output file path for dominance-selected gene counts')
-    parser.add_argument('-P', metavar='spit_test_min_p_values.txt', required=True, type=str, help='Output file path for minimum p-values from all iterations')
-    
+    parser.add_argument('-I', metavar='dominance_selected_ifs.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "dominance_selected_ifs.txt"), help='Output file path for dominance-selected isoform fractions (IFs)')
+    parser.add_argument('-G', metavar='dominance_selected_gene_counts.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "dominance_selected_gene_counts.txt"), help='Output file path for dominance-selected gene counts')
+    parser.add_argument('-P', metavar='spit_test_min_p_values.txt', type=str, default = os.path.join(os.getcwd(), "SPIT_analysis", "spit_test_min_p_values.txt"), help='Output file path for minimum p-values from all iterations')
     args = parser.parse_args()
     IFs = pd.read_csv(args.i, sep='\t', index_col=0)
     tx_names = list(IFs.index)
