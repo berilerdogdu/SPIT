@@ -21,7 +21,7 @@ Users can also directly upload their datasets into this Colab environment and ea
 
 ### Parameter-fitting
 
-If you wish to run the parameter-fitting module, please clone this project and follow these steps:
+If you wish to run the parameter-fitting module with GNU Parallel, please clone this project and follow these steps:
 - Navigate into the "parameter_fitting" directory, and generate your 10 DTU simulations by running:
 ```
 sh simulate_exps.sh -i [tx_counts_file] -m [tx2gene_file] -l [pheno_file]
@@ -32,7 +32,7 @@ Please note that your input files should follow the formatting requirements desc
 ```
 sh run_SPIT_search_params.sh [#number of threads] -m [tx2gene_file]
 ```
-If you have multiple threads available, the run is distributed accordingly via GNU Parallel. The maximum number of threads that can be used is equal to the number of simulated experiments (10). For example, if you would like to run with 10 threads, run:
+The maximum number of threads that can be used is equal to the number of simulated experiments (10). For example, if you would like to run with 10 threads, run:
 
 ```
 sh run_SPIT_search_params.sh 10 -m [tx2gene_file]
