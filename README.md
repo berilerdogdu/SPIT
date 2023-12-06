@@ -26,7 +26,7 @@ Users can also directly upload their datasets into this Colab environment and ea
 
 ### Parameter-fitting with GNU Parallel
 
-If you wish to run the parameter-fitting module with GNU Parallel, please clone this project and follow these steps:
+If you would like to optimize hyper-parameters based on the dispersion levels on your own data  set, you can easily do so using the package module "fit_parameters". However, this is a computationally expensive process and might take some time. Multi-threading via GNU Parallel is an option. If you wish to run the parameter-fitting module with GNU Parallel, please clone this project and follow these steps:
 - Navigate into the "parameter_fitting" directory, and generate your 10 DTU simulations by running:
 ```
 sh simulate_exps.sh -i [tx_counts_file] -m [tx2gene_file] -l [pheno_file]
@@ -42,15 +42,11 @@ The maximum number of threads that can be used is equal to the number of simulat
 ```
 sh run_SPIT_search_params.sh 10 -m [tx2gene_file]
 ```
-Otherwise, please run as:
-```
-sh run_SPIT_search_params.sh 1 -m [tx2gene_file]
-```
 - Run the leave-one-out cross-validation (LOOCV) step to see the optimal parameters in all 10 experiments as:
 ```
 python LOOCV.py -m tx2gene_file.txt -P venns.pdf
 ```
-The output PDF file (venns.pdf) will include the optimal parameters at each iteratioin of the LOOCV process along with corresponding true positive and false positive rates and *F*-scores. 
+The output PDF file (venns.pdf) will include the optimal parameters at each iteration of the LOOCV process along with corresponding true positive and false positive rates and *F*-scores. 
 
 ##### If you use SPIT, please cite:
 Erdogdu, B., Varabyou, A., Hicks, S.C., Salzberg, S.L. & Pertea, M. Detecting differential transcript usage in complex diseases with SPIT. bioRxiv, 2023.2007.2010.548289 (2023)
