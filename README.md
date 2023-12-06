@@ -19,7 +19,7 @@ An extensive step-by-step guide that demonstrates the application of SPIT using 
 
 Users can also directly upload their datasets into this Colab environment and easily run SPIT [online](https://colab.research.google.com/drive/1u3NpleqcAfNz_0EAgO2UHItozd9PsF1w?usp=sharing).
 
-### Parameter-fitting
+### Parameter-fitting with GNU Parallel
 
 If you wish to run the parameter-fitting module with GNU Parallel, please clone this project and follow these steps:
 - Navigate into the "parameter_fitting" directory, and generate your 10 DTU simulations by running:
