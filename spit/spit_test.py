@@ -98,7 +98,7 @@ def mannwhitneyu_permutation(IFs, samples, case_sample_size, num_of_it, n_small)
         s = int(ctrl_sample_size/2)
         tx_matrix = np.transpose(IFs[samples].to_numpy()).astype(float)
         m_1, m_2 = get_random_halves(tx_matrix, s)
-        if(s <= 16):
+        if(s < 16):
             m_1 = complete_w_rand_samples(m_1, ctrl_sample_size)
             m_2 = complete_w_rand_samples(m_2, case_sample_size)
             p_arr, min_it_p_val = run_mann_whitney_u(m_1, m_2)
@@ -115,7 +115,7 @@ def mannwhitneyu_permutation(IFs, samples, case_sample_size, num_of_it, n_small)
         if(min_it_p_val == 1 | len(p_arr) == 0):
             pass
         perm_p_arr.append(p_arr)
-        if(s <= 16):
+        if(s < 16):
             i = int(num_of_it*0.05)
             min_tx_ind = np.argsort(p_arr)[i]
         else:
