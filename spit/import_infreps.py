@@ -36,5 +36,9 @@ def call_import_infreps(args):
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     tximport_path = os.path.join(current_script_dir, 'r_scripts/tximport_quant_files.R')
     robjects.r.source(tximport_path)
+    args.l = os.path.join("..", args.l)
+    args.m = os.path.join("..", args.m)
+    args.i = os.path.join("..", args.i)
+    args.quant_path = os.path.join("..", args.quant_path)
     import_infreps = robjects.r['import_infreps']
     import_infreps(args.l, args.m, args.quant_type, args.quant_path, args.i)
