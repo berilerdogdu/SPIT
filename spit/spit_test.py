@@ -98,11 +98,11 @@ def mannwhitneyu_permutation(IFs, samples, case_sample_size, num_of_it, n_small)
         s = int(ctrl_sample_size/2)
         tx_matrix = np.transpose(IFs[samples].to_numpy()).astype(float)
         m_1, m_2 = get_random_halves(tx_matrix, s)
-        if(s < 16):
+        if(s <= 16):
             m_1 = complete_w_rand_samples(m_1, ctrl_sample_size)
             m_2 = complete_w_rand_samples(m_2, case_sample_size)
             p_arr, min_it_p_val = run_mann_whitney_u(m_1, m_2)
-            min_it_p_val = np.sort(p_arr)[int(num_of_it*0.05)]
+            min_it_p_val = np.random.choice(np.sort(p_arr)[0:int(m_1.shape[1]*0.01)])
         elif(s>n_small):
             rand_if = random.uniform(0, 1)
             m_1_left, m_1_right = split_distributions(m_1, rand_if)
@@ -115,19 +115,16 @@ def mannwhitneyu_permutation(IFs, samples, case_sample_size, num_of_it, n_small)
         if(min_it_p_val == 1 | len(p_arr) == 0):
             pass
         perm_p_arr.append(p_arr)
-        if(s < 16):
-            i = int(num_of_it*0.05)
-            min_tx_ind = np.argsort(p_arr)[i]
-        else:
+        if (s > 16):
             i = 0
             min_tx_ind = np.nanargmin(p_arr)
-        while((min_tx_ind in sampled_txs) and (len(sampled_txs) < tx_matrix.shape[1])):
-            i+=1
-            min_tx_ind = np.argsort(p_arr)[i]
-            if(np.isnan(p_arr[min_tx_ind])):
-                break
-        sampled_txs.add(min_tx_ind)
-        min_it_p_val = p_arr[min_tx_ind]
+            while((min_tx_ind in sampled_txs) and (len(sampled_txs) < tx_matrix.shape[1])):
+                i+=1
+                min_tx_ind = np.argsort(p_arr)[i]
+                if(np.isnan(p_arr[min_tx_ind])):
+                    break
+            sampled_txs.add(min_tx_ind)
+            min_it_p_val = p_arr[min_tx_ind]
         min_perm_p_arr.append(min_it_p_val)
     perm_p_medians = pd.DataFrame(np.transpose(np.array(perm_p_arr))).set_index(IFs.index).median(axis = 1)
     return min_perm_p_arr, perm_p_medians
