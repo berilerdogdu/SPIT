@@ -140,7 +140,7 @@ def main(argv=None):
     parser_dtu.add_argument('--quant_path', metavar='/path/', type=str, default=None, help='Path to the parent output directory of Salmon, kallisto, or other quantification tool compatible with tximport (the directory will contain a folder for each sample).')
     parser_dtu.add_argument('--quant_type', metavar='salmon', type=str, default=None, help='The quantification tool used to generate counts. Options compatible with tximport are "salmon", "sailfish", "alevin", "kallisto", "rsem", and "stringtie".')
     parser_dtu.add_argument('-b', '--bandwidth', metavar='0.09', type=float, default=0.09, help='choice of bandwidth for kernel density estimation')
-    parser_dtu.add_argument('--f_cpm', action='store_true', help='Apply filter-CPM thresholding')
+    parser_dtu.add_argument('--f_cpm', action='store_true', help='Apply filtered-CPM thresholding')
     parser_dtu.add_argument('--plot', action='store_true', help='Plot permutation importances')
     parser_dtu.set_defaults(func=handle_dtu)
     
@@ -166,7 +166,7 @@ def main(argv=None):
     parser_fit.add_argument('-s', '--genefilter_sample', metavar='10', type=int, default=10, help='Each gene must have a read count of at least c in at least s samples.')
     parser_fit.add_argument('-d', '--p_dom', metavar='0.75', type=float, default=0.75, help='Dominance selection threshold')
     parser_fit.add_argument('--n_iter', metavar='100', type=int, default=100, help='Number of iterations')
-    parser_fit.add_argument('--f_cpm', action='store_true', help='Apply filter-CPM thresholding')
+    parser_fit.add_argument('--f_cpm', action='store_true', help='Apply filtered-CPM thresholding')
     parser_fit.set_defaults(func=handle_param_fit)
     
     
