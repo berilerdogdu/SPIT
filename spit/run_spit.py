@@ -1,4 +1,5 @@
 import os
+import sys
 import argparse
 import shutil
 from spit.transform_tx_counts_to_ifs import main as transform_counts
