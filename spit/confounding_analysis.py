@@ -65,7 +65,7 @@ def get_lower_quartile(data):
     return lower_quartile
 
 def build_random_forest_regr(cluster_m_joint_dtu, cov_names, covs_arr, ifs_dtu_arr, n_small, plot, plot_dir):
-    regr = RandomForestRegressor(n_estimators = 50, max_depth=1, criterion='absolute_error', bootstrap = True, min_samples_split = n_small)
+    regr = RandomForestRegressor(n_estimators = 10, max_depth=1, criterion='absolute_error', bootstrap = True, min_samples_split = n_small)
     cluster_m_joint_dtu_arr = cluster_m_joint_dtu.to_numpy()
     tx_ids = cluster_m_joint_dtu.index.to_list()
     sig_tx_inds = []
@@ -80,7 +80,7 @@ def build_random_forest_regr(cluster_m_joint_dtu, cov_names, covs_arr, ifs_dtu_a
         tx_cls_arr = tx_cls_arr[~np.isnan(tx_cls_arr)]
         tx_all_attr = np.append(covs_tx,np.array(tx_cls_arr).reshape(len(tx_cls_arr), 1),1)
         regr.fit(tx_all_attr, tx_tif)
-        result = permutation_importance(regr, tx_all_attr, tx_tif, n_repeats=50, random_state=42)
+        result = permutation_importance(regr, tx_all_attr, tx_tif, n_repeats=30, random_state=42)
         importances = pd.DataFrame(
         result.importances.T,
         columns = cov_names + ['spit_v'])
@@ -122,7 +122,7 @@ def write_post_filter_results(sig_tx_inds, cluster_m_joint_dtu, spit_cluster_mat
 
 
 def main(args):
-
+    np.random.seed(42) 
     matplotlib.use('Agg')
     warnings.simplefilter(action='ignore', category=FutureWarning)
     IFs_df = pd.read_csv(args.i, sep = '\t', index_col = 0)

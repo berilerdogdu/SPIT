@@ -31,15 +31,15 @@ def spit_chart(args):
     joint_p_dtu_pre_conf_df = joint_p_df.loc[pre_conf_dtu_txs]
     non_dtu_txs = list(set(joint_p_df.index.to_list()).difference(set(pre_conf_dtu_txs)))
     joint_p_non_dtu_df = joint_p_df.loc[non_dtu_txs]
-    plt.scatter(-np.log10(joint_p_non_dtu_df['perm_min_p_value']), -np.log10(joint_p_non_dtu_df['p_value']), s = 1, color = 'forestgreen', label='Insignificant transcripts')
+    plt.scatter(-np.log10(joint_p_non_dtu_df['perm_min_p_value']), -np.log10(joint_p_non_dtu_df['p_value']), s = 2, color = 'forestgreen', label='Insignificant transcripts')
     if(confounding_controlled):
         sig_tx_ids = pd.read_csv(confounding_controlled, sep = '\t', index_col = 0).index.to_list()
         joint_p_dtu_df = joint_p_df.loc[sig_tx_ids]
-        plt.scatter(-np.log10(joint_p_dtu_pre_conf_df['perm_min_p_value'].to_list()), -np.log10(joint_p_dtu_pre_conf_df['p_value'].to_list()), s = 7, marker = 'o', facecolors='none', color = 'purple', label='Transcripts eliminated by confounding control')
-        plt.scatter(-np.log10(joint_p_dtu_df['perm_min_p_value'].to_list()), -np.log10(joint_p_dtu_df['p_value'].to_list()), s = 7, marker = 'o', color = 'crimson', label='DTU transcripts')
+        plt.scatter(-np.log10(joint_p_dtu_pre_conf_df['perm_min_p_value'].to_list()), -np.log10(joint_p_dtu_pre_conf_df['p_value'].to_list()), s = 2, marker = 'o', facecolors='none', color = 'purple', label='Transcripts eliminated by confounding control')
+        plt.scatter(-np.log10(joint_p_dtu_df['perm_min_p_value'].to_list()), -np.log10(joint_p_dtu_df['p_value'].to_list()), s = 2, marker = 'o', color = 'crimson', label='DTU transcripts')
     else:
         sig_tx_ids = pre_conf_dtu_txs
-        plt.scatter(-np.log10(joint_p_dtu_pre_conf_df['perm_min_p_value'].to_list()), -np.log10(joint_p_dtu_pre_conf_df['p_value'].to_list()), s = 7, marker = 'o', facecolors='none', color = 'crimson', label='DTU transcripts')
+        plt.scatter(-np.log10(joint_p_dtu_pre_conf_df['perm_min_p_value'].to_list()), -np.log10(joint_p_dtu_pre_conf_df['p_value'].to_list()), s = 2, marker = 'o', facecolors='none', color = 'crimson', label='DTU transcripts')
     plt.axhline(y=-np.log10(float(args.p_cutoff)), linestyle='dashed', linewidth=1, label='SPIT-Test p-value cutoff')
     plt.ylabel('$-log_{10}$(p-value)', fontsize = 12)
     plt.xlabel('$-log_{10}$(Minimum p-value from SPIT-Test iterations)', fontsize = 12)
@@ -64,7 +64,7 @@ def plot_violins(args):
         clm_dtu = pd.read_csv(confounding_controlled, sep = '\t', index_col = 0)
     else:
         clm_dtu = pd.read_csv(orig_matrix, sep = '\t', index_col = 0)
-    sig_tx_ids = clm_dtu.index.to_list()
+    sig_tx_ids = clm_dtu[clm_dtu.any(axis = 1)].index.to_list()
     for i in tqdm(sig_tx_ids):
         spit_v = clm_dtu.loc[i]
         dtu_plus = spit_v.index[(spit_v == 1)]
@@ -74,8 +74,7 @@ def plot_violins(args):
         tx_df = pd.DataFrame({'sample': df_index, 'group': df_class, 'IF':df_if})
         custom_palette = ["darkgreen", "pink"]
         sns.set_palette(custom_palette)
-        sns.violinplot(data=tx_df, x="IF", y="group", hue="group", fontdict = { 'fontsize': 30})
-        plt.legend(loc="center right", bbox_to_anchor=(1.3, 0.5))
+        sns.violinplot(data=tx_df, x="IF", y="group", hue="group")
         plt.title(i + " - Isoform Fraction Violin Plots", size = 10, pad = 10)
         plt.savefig(os.path.join(args.O, "SPIT_analysis", "violin_plots", i+".png"))
         plt.close()

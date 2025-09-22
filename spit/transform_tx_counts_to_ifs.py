@@ -14,9 +14,6 @@ Date:
 import os
 import numpy as np
 import pandas as pd
-import random
-import math
-from collections import defaultdict
 
 
 def filter_on_isoform_count(counts_w_genes):
@@ -26,8 +23,7 @@ def filter_on_isoform_count(counts_w_genes):
     
 def convert_counts_to_IF_and_gene_level(counts): 
     counts_w_genes = counts
-    gene_level_counts = counts_w_genes.groupby('gene_id').sum()
-    gene_level_counts = gene_level_counts + 0.00001
+    gene_level_counts = counts_w_genes.groupby('gene_id').sum() + 0.00001
     counts_w_genes_multilevel = counts_w_genes.set_index([counts_w_genes.index, 'gene_id'])
     IFs = counts_w_genes_multilevel.div(gene_level_counts,axis='index',level='gene_id').reset_index(level='gene_id')
     return IFs, gene_level_counts
@@ -35,14 +31,14 @@ def convert_counts_to_IF_and_gene_level(counts):
 
 def main(args):
     tx_count_data = pd.read_csv(args.i, sep='\t', index_col=0)
-    tx2gene = pd.read_csv(args.m, sep = '\t')
-    txs_w_genes = tx_count_data.join(tx2gene.set_index('tx_id'))
+    tx2gene = pd.read_csv(args.m, sep = '\t').set_index('tx_id')
+    txs_w_genes = tx_count_data.join(tx2gene)
     
     if(args.write):
         print("Input number of transcripts: ", txs_w_genes.shape[0])
         print("Input number of genes: ", len(txs_w_genes.gene_id.unique()))
     tx_count_data = tx_count_data[tx_count_data.values.sum(axis=1) != 0]
-    txs_w_genes = tx_count_data.join(tx2gene.set_index('tx_id'))
+    txs_w_genes = tx_count_data.join(tx2gene)
     if(args.write):
         print("After filtering out all-zeros:")
         print("\tNumber of transcripts", len(txs_w_genes.index))

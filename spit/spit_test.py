@@ -15,7 +15,7 @@ import os
 import numpy as np
 import pandas as pd
 import random
-import math
+import warnings
 import scipy.stats as sts
 from collections import defaultdict
 from tqdm import tqdm
@@ -42,6 +42,7 @@ def jitter_matrix(m):
 def run_mann_whitney_u(m_1, m_2):
     m_1 = jitter_matrix(m_1)
     m_2 = jitter_matrix(m_2)
+    warnings.filterwarnings("ignore", message=".*small.*sample.*")
     mwu_results = sts.mannwhitneyu(m_1, m_2, method = 'auto', alternative='two-sided', axis = 0, nan_policy = 'omit')
     if(np.isnan(mwu_results[1]).all()):
         min_p_val = 1
@@ -79,21 +80,23 @@ def get_random_halves(matrix, s):
 
 def complete_w_rand_samples(m, target_sample_size):
     num_of_rand_samples = target_sample_size - m.shape[0]
-    rand_samples = np.random.uniform(0, 1, (num_of_rand_samples, m.shape[1]))
+    rand_samples = np.random.uniform(0, 1, (max(0, num_of_rand_samples), m.shape[1]))
     completed_m = np.concatenate((m, rand_samples), axis=0)
     return completed_m
 
-def mannwhitneyu_permutation(IFs, samples, case_sample_size, num_of_it, n_small):
+def mannwhitneyu_permutation(IFs, samples, case_sample_size, num_of_it, n_small, verbose=False):
     min_perm_p_arr = []
     perm_p_arr = []
     sampled_txs = set()
-    print("Chewing in progress:")
+    if verbose:
+        print("Chewing in progress:")
     for it in range(1, num_of_it+1):
-        out = '\r'+ str(it) + " iterations completed."
-        if (it == num_of_it):
-            print(out)
-        else:
-            print(out, end='')
+        if verbose:
+            out = '\r'+ str(it) + " iterations completed."
+            if (it == num_of_it):
+                print(out)
+            else:
+                print(out, end='')
         ctrl_sample_size = len(samples)
         s = int(ctrl_sample_size/2)
         tx_matrix = np.transpose(IFs[samples].to_numpy()).astype(float)
@@ -138,15 +141,13 @@ def write_min_p_values(min_perm_p_arr, p_values_file):
     return
 
 def main(args):
-
+    np.random.seed(42)
+    random.seed(42)
     IFs = pd.read_csv(args.i, sep='\t', index_col=0)
-    tx_names = list(IFs.index)
-    gene_names = list(IFs.gene_id.unique())
-    IFs = IFs.round(3)
     pheno = pd.read_csv(args.l, sep='\t')
     samples = pheno[pheno.condition == 0].id.to_list()
     case_sample_size = pheno[pheno.condition == 1].shape[0]
-    min_perm_p_arr, perm_p_medians = mannwhitneyu_permutation(IFs, samples, case_sample_size, args.n_iter, args.n_small)
+    min_perm_p_arr, perm_p_medians = mannwhitneyu_permutation(IFs, samples, case_sample_size, args.n_iter, args.n_small, args.verbose)
     if(args.exp):
         write_dir = args.exp
     else:

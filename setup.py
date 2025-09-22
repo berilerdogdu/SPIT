@@ -2,7 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='spit',
-    version='0.1.9',
+    version='1.0.1',
+    description='Comprehensive Python package for detecting differential transcript usage (DTU) in RNA-seq data.',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -10,7 +11,6 @@ setup(
         'matplotlib_venn>=0.11.6',
         'numpy>=1.20.3',
         'pandas>=1.3.4',
-        'rpy2>=3.5.14',
         'scikit_learn>=1.1.1',
         'scipy>=1.11.1',
         'seaborn>=0.11.2',
@@ -19,8 +19,7 @@ setup(
     python_requires='>=3.9',
     entry_points={
         'console_scripts': [
-            'spit = spit.run_spit:main',  # Entry point for script1
+            'spit = spit.run_spit:main',
         ],
     },
-    package_data={'mypackage': ['r_scripts/*.R']},
 )

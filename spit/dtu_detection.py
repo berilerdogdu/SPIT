@@ -12,7 +12,6 @@ Date:
 """
 
 import os
-import math
 import pandas as pd
 import numpy as np
 import scipy.stats as sts
@@ -32,18 +31,15 @@ def convert_counts_to_cpm(counts):
 
 def filter_samples_on_gene_cpm(f_cpm, tx, tx2gene_dict, samples, ifs, cpms):
     gene_id = tx2gene_dict[tx]
-    cpm_gene_lvl = cpms.loc[gene_id, samples].to_dict()
-    selected_samples = []
-    filtered_samples = []
-    if(f_cpm):
-        for s in cpm_gene_lvl:
-            if (cpm_gene_lvl[s] > 10):
-                selected_samples.append(s)
-            else:
-                filtered_samples.append(s)
+    if f_cpm:
+        cpm_vals = cpms.loc[gene_id, samples].values
+        keep_mask = cpm_vals > 10
+        selected_samples = [s for s, k in zip(samples, keep_mask) if k]
+        filtered_samples = [s for s, k in zip(samples, keep_mask) if not k]
     else:
         selected_samples = samples
-    selected_if_arr = ifs.loc[tx, selected_samples].to_numpy(copy = True, dtype=np.float64)
+        filtered_samples = []
+    selected_if_arr = ifs.loc[tx, selected_samples].to_numpy(copy=True, dtype=np.float64)
     return np.array(selected_samples), selected_if_arr, filtered_samples
     
 def groupsize_limit_check(ctrl, case, size_lim):
@@ -95,16 +91,18 @@ def fit_kde_and_mannwhitney(ctrl_subgroup, case_subgroup, b):
     r = sts.mannwhitneyu(case_subgroup, ctrl_subgroup, method = 'auto', alternative='two-sided')
     return round(r[1], 16), likelihood
 
-def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_size_lim, perm_p_cutoff, b, f_cpm):
+def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_size_lim, perm_p_cutoff, b, f_cpm, verbose=False):
     likelihood_arr = []
     wrst_p_arr = []
     cpms = convert_counts_to_cpm(gene_counts)
-    genotype_cluster_df = pd.DataFrame(0, index=ifs.index, columns=case)
-    print("Detecting potential DTU transcripts:")
-    for i in tqdm(ifs.index.to_list()):
+    genotype_cluster_df = pd.DataFrame(0, index=ifs.index, columns=case, dtype=np.int8)
+    if verbose:
+        print("Detecting potential DTU transcripts:")
+    iterator = ifs.index.to_list()
+    for i in (tqdm(iterator) if verbose else iterator):
         selected_ctrls, ctrl_arr, filtered_ctrls = filter_samples_on_gene_cpm(f_cpm, i, tx2gene_dict, ctrl, ifs, cpms)
         selected_cases, case_arr, filtered_cases = filter_samples_on_gene_cpm(f_cpm, i, tx2gene_dict, case, ifs, cpms)
-        genotype_cluster_df.loc[i, filtered_cases] = None
+        genotype_cluster_df.loc[i, filtered_cases] = -1
         if((groupsize_limit_check(ctrl_arr, case_arr, cluster_size_lim)) == 0):
             wrst_p_arr.append(1)
             likelihood_arr.append(0)
@@ -211,6 +209,7 @@ def get_stable_dtu(num_of_infReps, infReps_dtu_genes, infReps_flagged_genes, wrs
 
 def write_final_results(wrst_pos_genes, flagged_genes, output):
     with open(output, 'w') as f:
+        f.write("gene_id\tflag\n")
         for g in wrst_pos_genes:
             if(g in flagged_genes):
                 f.write(g + "\t" + "F" + "\n")
@@ -220,8 +219,8 @@ def write_final_results(wrst_pos_genes, flagged_genes, output):
     return
 
 def main(args):
+    np.random.seed(42)
     IFs = pd.read_csv(args.i, sep='\t', index_col=0)
-    tx_names = list(IFs.index)
     IFs = IFs.round(3)
     gene_counts = pd.read_csv(args.g, sep='\t', index_col=0)
     tx2gene = pd.read_csv(args.m, sep = '\t', index_col=0)
@@ -229,11 +228,10 @@ def main(args):
     pheno = pd.read_csv(args.l, sep='\t')
     ctrl_samples = pheno[pheno.condition == 0].id.to_list()
     case_samples = pheno[pheno.condition == 1].id.to_list()
-    likelihood_arr, wrst_p_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, args.n_small, args.p_cutoff, args.bandwidth, args.f_cpm)
+    likelihood_arr, wrst_p_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, args.n_small, args.p_cutoff, args.bandwidth, args.f_cpm, args.verbose)
     mad_scores = MADsfromMedian(likelihood_arr)
     likelihood_cutoff = filter_likelihood_on_mad(likelihood_arr, mad_scores)
     wrst_pos_genes, flagged_genes = find_and_flag_dtu_genes(IFs, likelihood_arr, likelihood_cutoff, wrst_p_arr, args.p_cutoff)
-    pd.DataFrame(wrst_p_arr, index = IFs.index, columns = ['p_value']).to_csv(os.path.join(args.O, "SPIT_analysis", "all_p_values.txt"), sep = '\t')
     if(args.infReps):
         all_samples = pheno.id.to_list()
         infReps = []
@@ -250,9 +248,10 @@ def main(args):
         write_dir = args.exp
         write_final_results(wrst_pos_genes, flagged_genes, os.path.join(write_dir, "spit_out_k" + str(round(args.k, 1)) + ".b" + str(format(args.bandwidth, '.2f')) + ".txt"))
         genotype_cluster_df.to_csv(os.path.join(write_dir, "spit_cluster_matrix_k"+ str(round(args.k, 1)) + ".b" + str(format(args.bandwidth, '.2f')) + ".txt"), sep = '\t')
+        pd.DataFrame(wrst_p_arr, index = IFs.index, columns = ['p_value']).to_csv(os.path.join(write_dir, "all_p_values.txt"), sep = '\t')
     else:
         write_dir = os.path.join(args.O, "SPIT_analysis")
         write_final_results(wrst_pos_genes, flagged_genes, os.path.join(write_dir, "spit_out.txt"))
         genotype_cluster_df.to_csv(os.path.join(write_dir, "spit_cluster_matrix.txt"), sep = '\t')
-
+        pd.DataFrame(wrst_p_arr, index = IFs.index, columns = ['p_value']).to_csv(os.path.join(write_dir, "all_p_values.txt"), sep = '\t')
 
