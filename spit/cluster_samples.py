@@ -18,8 +18,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
-from scipy.spatial.distance import pdist, squareform
 import warnings
 
 
@@ -39,6 +37,8 @@ def perform_hclust_python(pheno_file, include_shared_dtu=True, col_palette="BuGn
         return None
     
     spit_cluster_m_processed = spit_cluster_m.fillna(0).replace(-1, 0)
+    num_cols = spit_cluster_m_processed.select_dtypes(include=[np.number]).columns
+    spit_cluster_m_processed[num_cols] = spit_cluster_m_processed[num_cols].astype(np.int8)
     spit_cluster_m_original = spit_cluster_m.copy()
     
     if not include_shared_dtu:
@@ -109,8 +109,6 @@ def perform_hclust_python(pheno_file, include_shared_dtu=True, col_palette="BuGn
             linewidths=0.02,
             figsize=(fig_width, fig_height),
             cbar_kws={'aspect': 30, 'ticks': [0, 1], 'format': '%.0f', 'orientation': 'horizontal'},
-            xticklabels=False,
-            yticklabels=False,
             square=False
         )
 

@@ -39,6 +39,10 @@ def convert_counts_to_IF_and_gene_level(counts, tx2gene, genefilter_count, genef
     counts_w_genes = counts_w_genes[counts_w_genes.gene_id.isin(valid_genes)]
     counts_w_genes_multilevel = counts_w_genes.set_index([counts_w_genes.index, 'gene_id'])
     IFs = counts_w_genes_multilevel.div(gene_level_counts,axis='index',level='gene_id').droplevel('gene_id')
+    if_num_cols = IFs.select_dtypes(include=[np.number]).columns
+    IFs[if_num_cols] = IFs[if_num_cols].astype(np.float32).round(3)
+    gene_num_cols = gene_level_counts.select_dtypes(include=[np.number]).columns
+    gene_level_counts[gene_num_cols] = gene_level_counts[gene_num_cols].astype(np.int32)
     return IFs, gene_level_counts
     
 def filter_on_IF(IFs, n, f):
@@ -54,7 +58,7 @@ def filter_on_isoform_count(counts, tx2gene):
     
 def select_genes_w_dom_iso(IFs, ctrl_samples, p_dom):
     print("...Selecting genes with consistently dominant isoforms in control group...")
-    IFs = IFs[[*ctrl_samples, 'gene_id']].round(3)
+    IFs = IFs[[*ctrl_samples, 'gene_id']]
     IFs.insert(0, "ctrl_IF_mean", IFs[ctrl_samples].mean(axis = 1))
     ctrl_IF_max = IFs.sort_values('ctrl_IF_mean', ascending=False).drop_duplicates(['gene_id'])
     ctrl_IF_no_max = IFs.drop(ctrl_IF_max.index)
@@ -70,6 +74,7 @@ def select_genes_w_dom_iso(IFs, ctrl_samples, p_dom):
 
 def main(args):
     tx_count_data = pd.read_csv(args.i, sep='\t', index_col=0)
+    tx_count_data = tx_count_data.astype(np.int32)
     tx2gene = pd.read_csv(args.m, sep = '\t').set_index('tx_id')
     if(args.write):
         print("Input number of transcripts: ", tx_count_data.shape[0])
@@ -114,23 +119,35 @@ def main(args):
         print("\tNumber of transcripts", len(filtered_count_data_on_isoform_count.index))
         print("\tNumber of genes: ", len(tx2gene.loc[filtered_count_data_on_isoform_count.index].gene_id.unique()))
     filtered_IF_data_on_isoform_count = IFs.loc[filtered_ind_on_isoform_count,:]
-    final_filtered_tx_counts = filtered_count_data_on_isoform_count.join(tx2gene).round(3)
+    final_filtered_tx_counts = filtered_count_data_on_isoform_count.join(tx2gene)
+    # Ensure integer counts
+    value_cols_tx = final_filtered_tx_counts.columns.difference(['gene_id'])
+    final_filtered_tx_counts[value_cols_tx] = final_filtered_tx_counts[value_cols_tx].astype(np.int32)
     final_filtered_tx_counts.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_tx_counts.txt"), sep = '\t')
-    final_filtered_ifs = filtered_IF_data_on_isoform_count.join(tx2gene).round(3)
+    final_filtered_ifs = filtered_IF_data_on_isoform_count.join(tx2gene)
+    # Ensure float32 IFs
+    value_cols_ifs = final_filtered_ifs.columns.difference(['gene_id'])
+    final_filtered_ifs[value_cols_ifs] = final_filtered_ifs[value_cols_ifs].astype(np.float32)
     final_filtered_ifs.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_ifs.txt"), sep = '\t')
     final_gene_ids = filtered_IF_data_on_isoform_count.join(tx2gene).gene_id.to_list()
-    final_filtered_gene_counts = gene_level_counts[gene_level_counts.index.isin(final_gene_ids)].round(3)
+    final_filtered_gene_counts = gene_level_counts[gene_level_counts.index.isin(final_gene_ids)]
+    final_filtered_gene_counts = final_filtered_gene_counts.astype(np.int32)
     final_filtered_gene_counts.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_gene_counts.txt"), sep = '\t')
     
     if(args.p_dom > 0):
         selected_dom_iso_genes = select_genes_w_dom_iso(final_filtered_ifs, ctrl_samples, args.p_dom)
-        dominance_selected_ifs = final_filtered_ifs[final_filtered_ifs.gene_id.isin(selected_dom_iso_genes)]
-        dominance_selected_gene_counts = final_filtered_gene_counts[final_filtered_gene_counts.index.isin(selected_dom_iso_genes)]
-        dominance_selected_tx_counts = final_filtered_tx_counts[final_filtered_tx_counts.index.isin(dominance_selected_ifs.index)]
+        dominance_selected_ifs = final_filtered_ifs[final_filtered_ifs.gene_id.isin(selected_dom_iso_genes)].copy()
+        dominance_selected_gene_counts = final_filtered_gene_counts[final_filtered_gene_counts.index.isin(selected_dom_iso_genes)].copy()
+        dominance_selected_tx_counts = final_filtered_tx_counts[final_filtered_tx_counts.index.isin(dominance_selected_ifs.index)].copy()
         if(args.write):
             print("After selecting for genes with a dominant transcript in control group:")
             print("\tNumber of transcripts", len(dominance_selected_ifs.index))
             print("\tNumber of genes: ", len(dominance_selected_ifs.gene_id.unique()))
+        dom_if_val_cols = dominance_selected_ifs.select_dtypes(include=[np.number]).columns
+        dominance_selected_ifs.loc[:, dom_if_val_cols] = dominance_selected_ifs.loc[:, dom_if_val_cols].astype(np.float32)
         dominance_selected_ifs.to_csv(os.path.join(args.O, "SPIT_analysis", "dominance_selected_ifs.txt"), sep = '\t')
+        dominance_selected_gene_counts = dominance_selected_gene_counts.astype(np.int32)
         dominance_selected_gene_counts.to_csv(os.path.join(args.O, "SPIT_analysis", "dominance_selected_gene_counts.txt"), sep = '\t')
+        dom_tx_val_cols = dominance_selected_tx_counts.select_dtypes(include=[np.number]).columns
+        dominance_selected_tx_counts.loc[:, dom_tx_val_cols] = dominance_selected_tx_counts.loc[:, dom_tx_val_cols].astype(np.int32)
         dominance_selected_tx_counts.to_csv(os.path.join(args.O, "SPIT_analysis", "dominance_selected_tx_counts.txt"), sep = '\t')

@@ -86,7 +86,7 @@ def recreate_tx_counts_matrix(simulated_dtu_IFs, gene_level_counts, ids):
     for i in ids:
         if_col = i + "_x"
         gene_col = i + "_y"
-        tx_counts_df[str(i)] = (merged_df[if_col] * merged_df[gene_col]).astype(int)
+        tx_counts_df[str(i)] = (merged_df[if_col] * merged_df[gene_col]).astype(np.int32)
     tx_counts_df["tx_id"] = merged_df["tx_id"]
     tx_counts_df["gene_id"] = merged_df["gene_id"]
     return tx_counts_df.set_index("tx_id", drop = True)
@@ -96,14 +96,20 @@ def convert_counts_to_IF_and_gene_level(counts):
     gene_level_counts = counts.groupby('gene_id').sum()
     gene_level_counts = gene_level_counts + 0.00001
     IFs = counts_w_genes_multilevel.div(gene_level_counts,axis='index',level='gene_id').reset_index('gene_id')
-    
+    if_num_cols = IFs.select_dtypes(include=[np.number]).columns
+    IFs[if_num_cols] = IFs[if_num_cols].astype(np.float32).round(3)
+    gene_num_cols = gene_level_counts.select_dtypes(include=[np.number]).columns
+    gene_level_counts[gene_num_cols] = gene_level_counts[gene_num_cols].astype(np.int32)
     return IFs, gene_level_counts
 
 
 def main(args):
     warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
     IFs = pd.read_csv(args.i, sep='\t', index_col=0)
+    if_cols = IFs.select_dtypes(include=[np.number]).columns
+    IFs[if_cols] = IFs[if_cols].astype(np.float32).round(3)
     gene_level_counts = pd.read_csv(args.g, sep='\t', index_col=0)
+    gene_level_counts = gene_level_counts.astype(np.int32)
     gene_names = list(IFs.gene_id.unique())
     with open(args.ctrl) as ctrl_file:
         ctrl_samples = [line.strip() for line in ctrl_file]
@@ -118,7 +124,11 @@ def main(args):
     simulated_dtu_ifs, genotype_cluster_df = simulate_dtu(IFs, dtu_genes, ctrl_samples, case_samples, args.n_splicotypes, args.n_small)
     simulated_dtu_counts = recreate_tx_counts_matrix(simulated_dtu_ifs, gene_level_counts, all_ids)
     corrected_IFs, corrected_gene_level_counts = convert_counts_to_IF_and_gene_level(simulated_dtu_counts)
+    c_if_cols = corrected_IFs.select_dtypes(include=[np.number]).columns
+    corrected_IFs[c_if_cols] = corrected_IFs[c_if_cols].astype(np.float32)
     corrected_IFs.to_csv(args.F, sep = '\t')
+    simulated_dtu_counts = simulated_dtu_counts.astype(np.int32)
     simulated_dtu_counts.to_csv(args.T, sep = '\t')
+    corrected_gene_level_counts = corrected_gene_level_counts.astype(np.int32)
     corrected_gene_level_counts.to_csv(args.G, sep = '\t')
     genotype_cluster_df.drop(columns=['gene_id']).to_csv(args.true_cluster, sep = '\t')

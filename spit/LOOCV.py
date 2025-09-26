@@ -14,6 +14,8 @@ def make_true_dtu_sets(exps, tx_2_gene_dict, base_dir):
     for e in exps:
         true_cluster_path = os.path.join(base_dir, e, "true_cluster_array.txt")
         true_cluster_arr = pd.read_csv(true_cluster_path, sep = '\t', index_col = 0)
+        num_cols = true_cluster_arr.select_dtypes(include=[np.number]).columns
+        true_cluster_arr[num_cols] = true_cluster_arr[num_cols].astype(np.int8)
         dtu_txs = true_cluster_arr[(true_cluster_arr==1).any(axis=1)].index.to_list()
         dtu_genes = set()
         exp_dtu_txs_dict[e] = dtu_txs
@@ -44,6 +46,8 @@ def apply_and_plot_loocv(exps, exp_dtu_genes_dict, tx_2_gene_dict, pdf_file_path
                         dtu_genes = exp_dtu_genes_dict[e_in]
                         spit_cluster_path = os.path.join(base_dir, e_in, "spit_cluster_matrix_k" + str(k) + ".b" + str(b) + ".txt")
                         spit_cluster_arr = pd.read_csv(spit_cluster_path, sep='\t', index_col=0)
+                        num_cols = spit_cluster_arr.select_dtypes(include=[np.number]).columns
+                        spit_cluster_arr[num_cols] = spit_cluster_arr[num_cols].astype(np.int8)
                         spit_dtu_txs = spit_cluster_arr[(spit_cluster_arr == 1).any(axis=1)].index.to_list()
                         spit_genes = set()
                         for t in spit_dtu_txs:
@@ -61,6 +65,8 @@ def apply_and_plot_loocv(exps, exp_dtu_genes_dict, tx_2_gene_dict, pdf_file_path
         test_dtu_genes = exp_dtu_genes_dict[e_out]
         spit_cluster_path = os.path.join(base_dir, e_out, "spit_cluster_matrix_k" + str(k_best) + ".b" + str(b_best) + ".txt")
         spit_cluster_arr = pd.read_csv(spit_cluster_path, sep='\t', index_col=0)
+        num_cols = spit_cluster_arr.select_dtypes(include=[np.number]).columns
+        spit_cluster_arr[num_cols] = spit_cluster_arr[num_cols].astype(np.int8)
         spit_dtu_txs = spit_cluster_arr[(spit_cluster_arr == 1).any(axis=1)].index.to_list()
         spit_genes = set()
         for t in spit_dtu_txs:

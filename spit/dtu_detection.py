@@ -15,7 +15,7 @@ import os
 import pandas as pd
 import numpy as np
 import scipy.stats as sts
-from collections import defaultdict, Counter
+from collections import Counter
 from sklearn.neighbors import KernelDensity
 from scipy.signal import argrelextrema
 from matplotlib import pyplot as plt
@@ -27,7 +27,7 @@ def convert_counts_to_cpm(counts):
     lib_sizes = counts.sum(axis = 0).to_list()
     scaled_counts = counts.divide(lib_sizes)
     cpms = scaled_counts * (10**6)
-    return cpms
+    return cpms.astype(np.float32)
 
 def filter_samples_on_gene_cpm(f_cpm, tx, tx2gene_dict, samples, ifs, cpms):
     gene_id = tx2gene_dict[tx]
@@ -39,7 +39,7 @@ def filter_samples_on_gene_cpm(f_cpm, tx, tx2gene_dict, samples, ifs, cpms):
     else:
         selected_samples = samples
         filtered_samples = []
-    selected_if_arr = ifs.loc[tx, selected_samples].to_numpy(copy=True, dtype=np.float64)
+    selected_if_arr = ifs.loc[tx, selected_samples].to_numpy(copy=True, dtype=np.float32)
     return np.array(selected_samples), selected_if_arr, filtered_samples
     
 def groupsize_limit_check(ctrl, case, size_lim):
@@ -91,15 +91,15 @@ def fit_kde_and_mannwhitney(ctrl_subgroup, case_subgroup, b):
     r = sts.mannwhitneyu(case_subgroup, ctrl_subgroup, method = 'auto', alternative='two-sided')
     return round(r[1], 16), likelihood
 
-def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_size_lim, perm_p_cutoff, b, f_cpm, verbose=False):
+def compute_double_stats(ifs, gene_counts, tx2gene_dict, ctrl, case, cluster_size_lim, perm_p_cutoff, b, f_cpm, quiet=False):
     likelihood_arr = []
     wrst_p_arr = []
     cpms = convert_counts_to_cpm(gene_counts)
     genotype_cluster_df = pd.DataFrame(0, index=ifs.index, columns=case, dtype=np.int8)
-    if verbose:
+    if not quiet:
         print("Detecting potential DTU transcripts:")
     iterator = ifs.index.to_list()
-    for i in (tqdm(iterator) if verbose else iterator):
+    for i in (tqdm(iterator) if not quiet else iterator):
         selected_ctrls, ctrl_arr, filtered_ctrls = filter_samples_on_gene_cpm(f_cpm, i, tx2gene_dict, ctrl, ifs, cpms)
         selected_cases, case_arr, filtered_cases = filter_samples_on_gene_cpm(f_cpm, i, tx2gene_dict, case, ifs, cpms)
         genotype_cluster_df.loc[i, filtered_cases] = -1
@@ -221,14 +221,16 @@ def write_final_results(wrst_pos_genes, flagged_genes, output):
 def main(args):
     np.random.seed(42)
     IFs = pd.read_csv(args.i, sep='\t', index_col=0)
-    IFs = IFs.round(3)
+    if_cols = IFs.select_dtypes(include=[np.number]).columns
+    IFs[if_cols] = IFs[if_cols].astype(np.float32).round(3)
     gene_counts = pd.read_csv(args.g, sep='\t', index_col=0)
+    gene_counts = gene_counts.astype(np.int32)
     tx2gene = pd.read_csv(args.m, sep = '\t', index_col=0)
     tx2gene_dict = tx2gene.gene_id.to_dict()
     pheno = pd.read_csv(args.l, sep='\t')
     ctrl_samples = pheno[pheno.condition == 0].id.to_list()
     case_samples = pheno[pheno.condition == 1].id.to_list()
-    likelihood_arr, wrst_p_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, args.n_small, args.p_cutoff, args.bandwidth, args.f_cpm, args.verbose)
+    likelihood_arr, wrst_p_arr, genotype_cluster_df = compute_double_stats(IFs, gene_counts, tx2gene_dict, ctrl_samples, case_samples, args.n_small, args.p_cutoff, args.bandwidth, args.f_cpm, args.quiet)
     mad_scores = MADsfromMedian(likelihood_arr)
     likelihood_cutoff = filter_likelihood_on_mad(likelihood_arr, mad_scores)
     wrst_pos_genes, flagged_genes = find_and_flag_dtu_genes(IFs, likelihood_arr, likelihood_cutoff, wrst_p_arr, args.p_cutoff)

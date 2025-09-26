@@ -32,7 +32,7 @@ def run_spit_test(exp_num, args):
     test_args.n_small = getattr(args, 'n_small', 12)
     test_args.O = args.O
     test_args.exp = exp_dir
-    test_args.verbose = getattr(args, 'verbose', False)
+    test_args.quiet = getattr(args, 'quiet', True)
     spit_test_main(test_args)
     print(f"SPIT test completed for experiment {exp_num}")
     return True
@@ -71,7 +71,7 @@ def run_parameter_search(exp_num, args):
                 dtu_args.f_cpm = getattr(args, 'f_cpm', False)
                 dtu_args.infReps = getattr(args, 'infReps', False)
                 dtu_args.exp = exp_dir
-                dtu_args.verbose = getattr(args, 'verbose', False)
+                dtu_args.quiet = getattr(args, 'quiet', True)
                 dtu_detection_main(dtu_args)
                 successful_runs += 1
             except Exception as e:

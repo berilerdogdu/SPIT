@@ -22,7 +22,7 @@ from tqdm import tqdm
 
 
 def split_distributions(m, split_if):
-    m_left, m_right = m.astype(float), m.astype(float)
+    m_left, m_right = m.astype(np.float32), m.astype(np.float32)
     m_right[m_right <= split_if] = np.nan
     m_left[m_left > split_if] = np.nan
     return m_left, m_right
@@ -84,14 +84,14 @@ def complete_w_rand_samples(m, target_sample_size):
     completed_m = np.concatenate((m, rand_samples), axis=0)
     return completed_m
 
-def mannwhitneyu_permutation(IFs, samples, case_sample_size, num_of_it, n_small, verbose=False):
+def mannwhitneyu_permutation(IFs, samples, case_sample_size, num_of_it, n_small, quiet=False):
     min_perm_p_arr = []
     perm_p_arr = []
     sampled_txs = set()
-    if verbose:
+    if not quiet:
         print("Chewing in progress:")
     for it in range(1, num_of_it+1):
-        if verbose:
+        if not quiet:
             out = '\r'+ str(it) + " iterations completed."
             if (it == num_of_it):
                 print(out)
@@ -99,7 +99,7 @@ def mannwhitneyu_permutation(IFs, samples, case_sample_size, num_of_it, n_small,
                 print(out, end='')
         ctrl_sample_size = len(samples)
         s = int(ctrl_sample_size/2)
-        tx_matrix = np.transpose(IFs[samples].to_numpy()).astype(float)
+        tx_matrix = np.transpose(IFs[samples].to_numpy()).astype(np.float32)
         m_1, m_2 = get_random_halves(tx_matrix, s)
         if(s <= 16):
             m_1 = complete_w_rand_samples(m_1, ctrl_sample_size)
@@ -133,7 +133,6 @@ def mannwhitneyu_permutation(IFs, samples, case_sample_size, num_of_it, n_small,
     return min_perm_p_arr, perm_p_medians
 
 def write_min_p_values(min_perm_p_arr, p_values_file):
-    p_cutoff = np.min(np.array(min_perm_p_arr))
     with open(p_values_file, 'w') as f:
         for i in min_perm_p_arr:
             i = format(i, '.16f')
@@ -144,10 +143,12 @@ def main(args):
     np.random.seed(42)
     random.seed(42)
     IFs = pd.read_csv(args.i, sep='\t', index_col=0)
+    if_cols = IFs.select_dtypes(include=[np.number]).columns
+    IFs[if_cols] = IFs[if_cols].astype(np.float32).round(3)
     pheno = pd.read_csv(args.l, sep='\t')
     samples = pheno[pheno.condition == 0].id.to_list()
     case_sample_size = pheno[pheno.condition == 1].shape[0]
-    min_perm_p_arr, perm_p_medians = mannwhitneyu_permutation(IFs, samples, case_sample_size, args.n_iter, args.n_small, args.verbose)
+    min_perm_p_arr, perm_p_medians = mannwhitneyu_permutation(IFs, samples, case_sample_size, args.n_iter, args.n_small, args.quiet)
     if(args.exp):
         write_dir = args.exp
     else:

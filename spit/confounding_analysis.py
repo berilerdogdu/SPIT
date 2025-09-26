@@ -126,6 +126,8 @@ def main(args):
     matplotlib.use('Agg')
     warnings.simplefilter(action='ignore', category=FutureWarning)
     IFs_df = pd.read_csv(args.i, sep = '\t', index_col = 0)
+    if_cols = IFs_df.select_dtypes(include=[np.number]).columns
+    IFs_df[if_cols] = IFs_df[if_cols].astype(np.float32).round(3)
     tx2gene_dict = IFs_df.to_dict()['gene_id']
     pheno_df = pd.read_csv(args.l, sep = '\t')
     spit_cluster_m = pd.read_csv(os.path.join(args.O, "SPIT_analysis", "spit_cluster_matrix.txt"), sep = '\t', index_col = 0)

@@ -23,7 +23,7 @@ def handle_shared_args(parser):
     parser.add_argument('--no_clusters', action='store_true', help='Assume case samples do not form clusters/subgroups.')
     parser.add_argument('--n_small', metavar='12', type=int, default=12, help='Smallest sample size for the subgroups. If "--no_clusters" option is used, it will be overwritten to 0.75 times the sample size of the smaller group for filtering purposes.')
     parser.add_argument('-O', metavar='/path/', type=str, default=os.getcwd(), help='Output directory path where the SPIT output folder will be written.')
-    parser.add_argument('--verbose', action='store_true', help='Verbose logging.')
+    parser.add_argument('--quiet', action='store_true', default=False, help='No verbose logging. Only show warnings and errors.')
     return
 
 def set_no_cluster_nsmall(args, param_bool):
@@ -84,7 +84,7 @@ def handle_clustering(args):
     cluster_samples(args)
     
 def handle_param_fit(args):
-    args.verbose = False
+    args.quiet = True
     fit_param_directory_path = os.path.join(args.O, "SPIT_analysis", "parameter_fitting")
     if os.path.exists(fit_param_directory_path) == False:
         os.mkdir(fit_param_directory_path)
@@ -144,8 +144,8 @@ def main(argv=None):
     parser_fit = subparsers.add_parser('fit_parameters', help='Apply parameter-fitting on your dataset (Optional) For specific parameters, run "spit fit_parameters -h".')
     handle_shared_args(parser_fit)
     parser_fit.add_argument('--n_exps', metavar='10', type=int, default=10, help='Number of experiments to simulate.')
-    parser_fit.add_argument('--n_spliceotypes', '--n_splicotypes', dest='n_splicotypes', metavar='5', type=int, default=5, help='Number of spliceotypes (subgroups) to simulate.')
-    parser_fit.add_argument('--n_dtu_genes', metavar='30', type=int, default=30, help='Number of DTU genes to simulate per spliceotypes (subgroups).')
+    parser_fit.add_argument('--n_spliceotypes', dest='n_splicotypes', metavar='5', type=int, default=5, help='Number of subgroups to simulate.')
+    parser_fit.add_argument('--n_dtu_genes', metavar='30', type=int, default=30, help='Number of DTU genes to simulate per subgroup.')
     parser_fit.add_argument('-w', '--write', action='store_true', help='Write the number of transcripts & genes left after each filtering step to stdout.')
     parser_fit.add_argument('--keep_all_nonzeros', action='store_true', help='If used, this options skips all SPIT prefiltering steps and only removes transcripts that do not have any non-zero counts in any sample. Any other filtering argument becomes irrelevant.')
     parser_fit.add_argument('-p', '--pr_fraction', metavar='0.2', type=float, default=0.2, help='Each transcript must have a positive read count in at least a fraction p_r of the samples in both the case and control groups.')

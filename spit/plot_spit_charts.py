@@ -1,10 +1,16 @@
 import os
 import sys
+import sys
 import shutil
 import pandas as pd
 import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
+try:
+    from IPython.display import display, Image as IPImage
+    _HAS_IPYTHON = True
+except Exception:
+    _HAS_IPYTHON = False
 import seaborn as sns
 from tqdm import tqdm
 
@@ -28,25 +34,42 @@ def spit_chart(args):
     dtu_comp_p_values = pd.read_csv(os.path.join(args.O, "SPIT_analysis", "all_p_values.txt"), sep = '\t', index_col = 0, header = 0, names = ['p_value'])
     perm_p_values = pd.read_csv(os.path.join(args.O, "SPIT_analysis", "perm_p_medians.txt"), sep = '\t', index_col = 0, header = 0, names = ['perm_min_p_value'])
     joint_p_df = perm_p_values.join(dtu_comp_p_values)
+    def neglog10(series):
+        s = series.astype(float).copy()
+        pos = s[s > 0]
+        if len(pos) == 0:
+            eps = 1e-300
+            s[:] = eps
+        else:
+            eps = pos.min()
+            s[s <= 0] = eps
+        return -np.log10(s)
     joint_p_dtu_pre_conf_df = joint_p_df.loc[pre_conf_dtu_txs]
     non_dtu_txs = list(set(joint_p_df.index.to_list()).difference(set(pre_conf_dtu_txs)))
     joint_p_non_dtu_df = joint_p_df.loc[non_dtu_txs]
-    plt.scatter(-np.log10(joint_p_non_dtu_df['perm_min_p_value']), -np.log10(joint_p_non_dtu_df['p_value']), s = 2, color = 'forestgreen', label='Insignificant transcripts')
+    plt.scatter(neglog10(joint_p_non_dtu_df['perm_min_p_value']), neglog10(joint_p_non_dtu_df['p_value']), s = 2, color = 'forestgreen', label='Insignificant transcripts')
     if(confounding_controlled):
         sig_tx_ids = pd.read_csv(confounding_controlled, sep = '\t', index_col = 0).index.to_list()
         joint_p_dtu_df = joint_p_df.loc[sig_tx_ids]
-        plt.scatter(-np.log10(joint_p_dtu_pre_conf_df['perm_min_p_value'].to_list()), -np.log10(joint_p_dtu_pre_conf_df['p_value'].to_list()), s = 2, marker = 'o', facecolors='none', color = 'purple', label='Transcripts eliminated by confounding control')
-        plt.scatter(-np.log10(joint_p_dtu_df['perm_min_p_value'].to_list()), -np.log10(joint_p_dtu_df['p_value'].to_list()), s = 2, marker = 'o', color = 'crimson', label='DTU transcripts')
+        plt.scatter(neglog10(joint_p_dtu_pre_conf_df['perm_min_p_value']), neglog10(joint_p_dtu_pre_conf_df['p_value']), s = 2, marker = 'o', facecolors='none', color = 'purple', label='Transcripts eliminated by confounding control')
+        plt.scatter(neglog10(joint_p_dtu_df['perm_min_p_value']), neglog10(joint_p_dtu_df['p_value']), s = 2, marker = 'o', color = 'crimson', label='DTU transcripts')
     else:
         sig_tx_ids = pre_conf_dtu_txs
-        plt.scatter(-np.log10(joint_p_dtu_pre_conf_df['perm_min_p_value'].to_list()), -np.log10(joint_p_dtu_pre_conf_df['p_value'].to_list()), s = 2, marker = 'o', facecolors='none', color = 'crimson', label='DTU transcripts')
+        plt.scatter(neglog10(joint_p_dtu_pre_conf_df['perm_min_p_value']), neglog10(joint_p_dtu_pre_conf_df['p_value']), s = 2, marker = 'o', facecolors='none', color = 'crimson', label='DTU transcripts')
     plt.axhline(y=-np.log10(float(args.p_cutoff)), linestyle='dashed', linewidth=1, label='SPIT-Test p-value cutoff')
     plt.ylabel('$-log_{10}$(p-value)', fontsize = 12)
     plt.xlabel('$-log_{10}$(Minimum p-value from SPIT-Test iterations)', fontsize = 12)
     plt.title("SPIT-Chart for Sample Analysis", fontsize = 14)
     plt.legend(fontsize=10)
-    plt.savefig(os.path.join(args.O, "SPIT_analysis", "SPIT_chart.png"))
+    output_png = os.path.join(args.O, "SPIT_analysis", "SPIT_chart.png")
+    plt.savefig(output_png)
     plt.close()
+    # If running in a notebook/IPython, also display inline
+    if _HAS_IPYTHON and hasattr(sys.modules.get('IPython'), 'get_ipython'):
+        try:
+            display(IPImage(filename=output_png))
+        except Exception:
+            pass
     return
 
 def plot_violins(args):
@@ -59,6 +82,8 @@ def plot_violins(args):
     pheno_df = pd.read_csv(args.l, sep='\t')
     ctrl_ids = pheno_df[pheno_df.condition == 0].id.to_list()
     ifs = pd.read_csv(args.i, sep = '\t', index_col = 0)
+    if_cols = ifs.select_dtypes(include=[np.number]).columns
+    ifs[if_cols] = ifs[if_cols].astype(np.float32).round(3)
     confounding_controlled, orig_matrix = check_confounding_control(args.O)
     if(confounding_controlled):
         clm_dtu = pd.read_csv(confounding_controlled, sep = '\t', index_col = 0)

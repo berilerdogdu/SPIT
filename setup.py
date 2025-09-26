@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='spit',
-    version='1.0.1',
+    version='2.0.0',
     description='Comprehensive Python package for detecting differential transcript usage (DTU) in RNA-seq data.',
     packages=find_packages(),
     include_package_data=True,

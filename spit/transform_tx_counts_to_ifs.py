@@ -26,11 +26,16 @@ def convert_counts_to_IF_and_gene_level(counts):
     gene_level_counts = counts_w_genes.groupby('gene_id').sum() + 0.00001
     counts_w_genes_multilevel = counts_w_genes.set_index([counts_w_genes.index, 'gene_id'])
     IFs = counts_w_genes_multilevel.div(gene_level_counts,axis='index',level='gene_id').reset_index(level='gene_id')
+    if_num_cols = IFs.select_dtypes(include=[np.number]).columns
+    IFs[if_num_cols] = IFs[if_num_cols].astype(np.float32).round(3)
+    gene_num_cols = gene_level_counts.select_dtypes(include=[np.number]).columns
+    gene_level_counts[gene_num_cols] = gene_level_counts[gene_num_cols].astype(np.int32)
     return IFs, gene_level_counts
 
 
 def main(args):
     tx_count_data = pd.read_csv(args.i, sep='\t', index_col=0)
+    tx_count_data = tx_count_data.astype(np.int32)
     tx2gene = pd.read_csv(args.m, sep = '\t').set_index('tx_id')
     txs_w_genes = tx_count_data.join(tx2gene)
     
@@ -51,6 +56,10 @@ def main(args):
         print("\tNumber of transcripts", len(filtered_count_data_on_isoform_count.index))
         print("\tNumber of genes: ", len(filtered_count_data_on_isoform_count.gene_id.unique()))
     IFs, gene_level_counts = convert_counts_to_IF_and_gene_level(filtered_count_data_on_isoform_count)
+    if_sample_cols = [c for c in IFs.columns if c != 'gene_id']
+    IFs[if_sample_cols] = IFs[if_sample_cols].astype(np.float32)
     IFs.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_ifs.txt"), sep = '\t')
+    filtered_count_data_on_isoform_count = filtered_count_data_on_isoform_count.astype(np.int32)
     filtered_count_data_on_isoform_count.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_tx_counts.txt"), sep = '\t')
+    gene_level_counts = gene_level_counts.astype(np.int32)
     gene_level_counts.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_gene_counts.txt"), sep = '\t')

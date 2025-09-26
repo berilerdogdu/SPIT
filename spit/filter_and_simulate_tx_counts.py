@@ -31,6 +31,10 @@ def convert_counts_to_IF_and_gene_level(counts, tx2gene, genefilter_count, genef
     counts_w_genes = counts_w_genes[counts_w_genes.gene_id.isin(valid_genes)]
     counts_w_genes_multilevel = counts_w_genes.set_index([counts_w_genes.index, 'gene_id'])
     IFs = counts_w_genes_multilevel.div(gene_level_counts,axis='index',level='gene_id').droplevel('gene_id')
+    if_num_cols = IFs.select_dtypes(include=[np.number]).columns
+    IFs[if_num_cols] = IFs[if_num_cols].astype(np.float32).round(3)
+    gene_num_cols = gene_level_counts.select_dtypes(include=[np.number]).columns
+    gene_level_counts[gene_num_cols] = gene_level_counts[gene_num_cols].astype(np.int32)
     return IFs, gene_level_counts
     
 def filter_on_IF(IFs, n, f):
@@ -57,6 +61,7 @@ def main(args):
             with open(args.log_file, 'a') as lf:
                 lf.write(str(msg) + '\n')
     tx_count_data = pd.read_csv(args.i, sep='\t', index_col=0)
+    tx_count_data = tx_count_data.astype(np.int32)
     tx2gene = pd.read_csv(args.m, sep = '\t').set_index('tx_id')
     txs_w_genes = tx_count_data.join(tx2gene)
     log("Input number of transcripts: " + str(tx_count_data.shape[0]))
@@ -105,7 +110,14 @@ def main(args):
         log("\tNumber of transcripts " + str(len(filtered_count_data_on_isoform_count.index)))
         log("\tNumber of genes: " + str(len(tx2gene.loc[filtered_count_data_on_isoform_count.index].gene_id.unique())))
     filtered_IF_data_on_isoform_count = IFs.loc[filtered_ind_on_isoform_count,:]
-    filtered_count_data_on_isoform_count.join(tx2gene).to_csv(args.T, sep = '\t')
-    filtered_IF_data_on_isoform_count.join(tx2gene).to_csv(args.F, sep = '\t')
+    final_tx = filtered_count_data_on_isoform_count.join(tx2gene)
+    val_cols_tx = final_tx.columns.difference(['gene_id'])
+    final_tx[val_cols_tx] = final_tx[val_cols_tx].astype(np.int32)
+    final_tx.to_csv(args.T, sep = '\t')
+    final_ifs = filtered_IF_data_on_isoform_count.join(tx2gene)
+    val_cols_ifs = final_ifs.columns.difference(['gene_id'])
+    final_ifs[val_cols_ifs] = final_ifs[val_cols_ifs].astype(np.float32)
+    final_ifs.to_csv(args.F, sep = '\t')
     final_gene_ids = filtered_IF_data_on_isoform_count.join(tx2gene).gene_id.to_list()
+    gene_level_counts = gene_level_counts.astype(np.int32)
     gene_level_counts[gene_level_counts.index.isin(final_gene_ids)].to_csv(args.G, sep = '\t')
