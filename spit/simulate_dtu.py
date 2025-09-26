@@ -93,8 +93,7 @@ def recreate_tx_counts_matrix(simulated_dtu_IFs, gene_level_counts, ids):
 
 def convert_counts_to_IF_and_gene_level(counts):
     counts_w_genes_multilevel = counts.set_index([counts.index, 'gene_id'])
-    gene_level_counts = counts.groupby('gene_id').sum()
-    gene_level_counts = gene_level_counts + 0.00001
+    gene_level_counts = (counts.groupby('gene_id').sum() + 0.00001).astype(np.float32)
     IFs = counts_w_genes_multilevel.div(gene_level_counts,axis='index',level='gene_id').reset_index('gene_id')
     if_num_cols = IFs.select_dtypes(include=[np.number]).columns
     IFs[if_num_cols] = IFs[if_num_cols].astype(np.float32).round(3)

@@ -5,12 +5,13 @@ import random
 def convert_counts_to_cpm(counts):
     lib_sizes = counts.sum(axis = 0).to_list()
     scaled_counts = counts.divide(lib_sizes)
-    cpms = scaled_counts * (10**6)
+    cpms = (scaled_counts * (10**6)).astype(np.float32)
     return cpms
 
 def filter_on_cpm(counts, n):
     lib_sizes = counts.sum(axis = 0).to_list()
-    mask = (counts.divide(lib_sizes) * 1e6) > 1.0
+    cpm_values = (counts.divide(lib_sizes) * 1e6).astype(np.float32)
+    mask = cpm_values > 1.0
     filtered_cpm_row_ind = counts.index[np.flatnonzero(mask.sum(axis=1) >= n)]
     return filtered_cpm_row_ind
 
@@ -24,7 +25,7 @@ def filter_on_tx_count(counts, pr_fraction, ctrl, case):
 
 def convert_counts_to_IF_and_gene_level(counts, tx2gene, genefilter_count, genefilter_sample):
     counts_w_genes = counts.join(tx2gene)
-    gene_level_counts = counts_w_genes.groupby('gene_id').sum() + 0.00001
+    gene_level_counts = (counts_w_genes.groupby('gene_id').sum() + 0.00001).astype(np.float32)
     gene_threshold_bool = gene_level_counts[gene_level_counts < genefilter_count].count(axis = 1) < genefilter_sample
     valid_genes = gene_threshold_bool[gene_threshold_bool].index
     gene_level_counts = gene_level_counts[gene_level_counts.index.isin(valid_genes)]

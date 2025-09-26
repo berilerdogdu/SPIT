@@ -26,8 +26,8 @@ from tqdm import tqdm
 def convert_counts_to_cpm(counts):
     lib_sizes = counts.sum(axis = 0).to_list()
     scaled_counts = counts.divide(lib_sizes)
-    cpms = scaled_counts * (10**6)
-    return cpms.astype(np.float32)
+    cpms = (scaled_counts * (10**6)).astype(np.float32)
+    return cpms
 
 def filter_samples_on_gene_cpm(f_cpm, tx, tx2gene_dict, samples, ifs, cpms):
     gene_id = tx2gene_dict[tx]

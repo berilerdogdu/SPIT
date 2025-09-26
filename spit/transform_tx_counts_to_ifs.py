@@ -23,7 +23,7 @@ def filter_on_isoform_count(counts_w_genes):
     
 def convert_counts_to_IF_and_gene_level(counts): 
     counts_w_genes = counts
-    gene_level_counts = counts_w_genes.groupby('gene_id').sum() + 0.00001
+    gene_level_counts = (counts_w_genes.groupby('gene_id').sum() + 0.00001).astype(np.float32)
     counts_w_genes_multilevel = counts_w_genes.set_index([counts_w_genes.index, 'gene_id'])
     IFs = counts_w_genes_multilevel.div(gene_level_counts,axis='index',level='gene_id').reset_index(level='gene_id')
     if_num_cols = IFs.select_dtypes(include=[np.number]).columns
