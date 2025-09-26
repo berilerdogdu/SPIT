@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: spit
+Version: 2.0.0
+Summary: Comprehensive Python package for detecting differential transcript usage (DTU) in RNA-seq data.
+Requires-Python: >=3.9
+License-File: LICENSE

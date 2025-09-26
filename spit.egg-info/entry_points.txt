@@ -1,0 +1,2 @@
+[console_scripts]
+spit = spit.run_spit:main
