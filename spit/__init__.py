@@ -212,7 +212,9 @@ def preprocess(
         result["filtered_ifs"] = df
     if os.path.exists(paths["filtered_gene_counts_path"]):
         df = pd.read_csv(paths["filtered_gene_counts_path"], sep='\t', index_col=0)
-        result["filtered_gene_counts"] = df.astype(np.int32)
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        df[numeric_cols] = df[numeric_cols].astype(np.int32)
+        result["filtered_gene_counts"] = df
     if os.path.exists(paths["filtered_tx_counts_path"]):
         df = pd.read_csv(paths["filtered_tx_counts_path"], sep='\t', index_col=0)
         counts_cols = df.select_dtypes(include=[np.number]).columns
@@ -225,7 +227,9 @@ def preprocess(
         result["dominance_selected_ifs"] = df
     if os.path.exists(paths["dominance_selected_gene_counts_path"]):
         df = pd.read_csv(paths["dominance_selected_gene_counts_path"], sep='\t', index_col=0)
-        result["dominance_selected_gene_counts"] = df.astype(np.int32)
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        df[numeric_cols] = df[numeric_cols].astype(np.int32)
+        result["dominance_selected_gene_counts"] = df
     if os.path.exists(paths["dominance_selected_tx_counts_path"]):
         df = pd.read_csv(paths["dominance_selected_tx_counts_path"], sep='\t', index_col=0)
         counts_cols = df.select_dtypes(include=[np.number]).columns

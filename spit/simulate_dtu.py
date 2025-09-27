@@ -127,7 +127,8 @@ def main(args):
     c_if_cols = corrected_IFs.select_dtypes(include=[np.number]).columns
     corrected_IFs[c_if_cols] = corrected_IFs[c_if_cols].astype(np.float32)
     corrected_IFs.to_csv(args.F, sep = '\t')
-    simulated_dtu_counts = simulated_dtu_counts.astype(np.int32)
+    numeric_cols = simulated_dtu_counts.select_dtypes(include=[np.number]).columns
+    simulated_dtu_counts[numeric_cols] = simulated_dtu_counts[numeric_cols].astype(np.int32)
     simulated_dtu_counts.to_csv(args.T, sep = '\t')
     corrected_gene_level_counts = corrected_gene_level_counts.astype(np.int32)
     corrected_gene_level_counts.to_csv(args.G, sep = '\t')

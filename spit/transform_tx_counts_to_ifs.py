@@ -35,7 +35,8 @@ def convert_counts_to_IF_and_gene_level(counts):
 
 def main(args):
     tx_count_data = pd.read_csv(args.i, sep='\t', index_col=0)
-    tx_count_data = tx_count_data.astype(np.int32)
+    numeric_cols = tx_count_data.select_dtypes(include=[np.number]).columns
+    tx_count_data[numeric_cols] = tx_count_data[numeric_cols].astype(np.int32)
     tx2gene = pd.read_csv(args.m, sep = '\t').set_index('tx_id')
     txs_w_genes = tx_count_data.join(tx2gene)
     
@@ -59,7 +60,9 @@ def main(args):
     if_sample_cols = [c for c in IFs.columns if c != 'gene_id']
     IFs[if_sample_cols] = IFs[if_sample_cols].astype(np.float32)
     IFs.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_ifs.txt"), sep = '\t')
-    filtered_count_data_on_isoform_count = filtered_count_data_on_isoform_count.astype(np.int32)
+    numeric_cols = filtered_count_data_on_isoform_count.select_dtypes(include=[np.number]).columns
+    filtered_count_data_on_isoform_count[numeric_cols] = filtered_count_data_on_isoform_count[numeric_cols].astype(np.int32)
     filtered_count_data_on_isoform_count.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_tx_counts.txt"), sep = '\t')
-    gene_level_counts = gene_level_counts.astype(np.int32)
+    numeric_cols = gene_level_counts.select_dtypes(include=[np.number]).columns
+    gene_level_counts[numeric_cols] = gene_level_counts[numeric_cols].astype(np.int32)
     gene_level_counts.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_gene_counts.txt"), sep = '\t')

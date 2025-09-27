@@ -62,7 +62,8 @@ def main(args):
             with open(args.log_file, 'a') as lf:
                 lf.write(str(msg) + '\n')
     tx_count_data = pd.read_csv(args.i, sep='\t', index_col=0)
-    tx_count_data = tx_count_data.astype(np.int32)
+    numeric_cols = tx_count_data.select_dtypes(include=[np.number]).columns
+    tx_count_data[numeric_cols] = tx_count_data[numeric_cols].astype(np.int32)
     tx2gene = pd.read_csv(args.m, sep = '\t').set_index('tx_id')
     txs_w_genes = tx_count_data.join(tx2gene)
     log("Input number of transcripts: " + str(tx_count_data.shape[0]))
@@ -120,5 +121,6 @@ def main(args):
     final_ifs[val_cols_ifs] = final_ifs[val_cols_ifs].astype(np.float32)
     final_ifs.to_csv(args.F, sep = '\t')
     final_gene_ids = filtered_IF_data_on_isoform_count.join(tx2gene).gene_id.to_list()
-    gene_level_counts = gene_level_counts.astype(np.int32)
+    numeric_cols = gene_level_counts.select_dtypes(include=[np.number]).columns
+    gene_level_counts[numeric_cols] = gene_level_counts[numeric_cols].astype(np.int32)
     gene_level_counts[gene_level_counts.index.isin(final_gene_ids)].to_csv(args.G, sep = '\t')
