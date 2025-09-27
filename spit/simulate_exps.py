@@ -54,6 +54,7 @@ def run_single_experiment(exp_num, args):
         sim_pheno=os.path.join(exp_dir, 'simulation_pheno.txt'),
         n_small=getattr(args, 'n_small', None),
         n_splicotypes=getattr(args, 'n_splicotypes', getattr(args, 'n_spliceotypes', None)),
+        p_dom=getattr(args, 'p_dom', 0.75),
     )
     simulate_dtu_main(sim_args)
 

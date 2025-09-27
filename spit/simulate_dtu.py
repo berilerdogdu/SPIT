@@ -5,7 +5,7 @@ import random
 from collections import defaultdict
 
 
-def select_dtu_genes(IFs, ctrl_samples, gene_names):
+def select_dtu_genes(IFs, ctrl_samples, gene_names, p_dom=0.75):
     pot_dtu_genes = random.sample(gene_names, 1000)
     dtu_IFs = IFs[IFs.gene_id.isin(pot_dtu_genes)]
     dtu_IFs.insert(0, "ctrl_IF_mean", dtu_IFs[ctrl_samples].mean(axis = 1))
@@ -19,7 +19,7 @@ def select_dtu_genes(IFs, ctrl_samples, gene_names):
             return list(final_dtu_genes)
         max_iso = ctrl_IF_max[ctrl_IF_max.gene_id == g].index
         second_max_iso = ctrl_IF_second_max[ctrl_IF_second_max.gene_id == g].index
-        if(np.sum(dtu_IFs.loc[max_iso, ctrl_samples].to_numpy() > dtu_IFs.loc[second_max_iso, ctrl_samples].to_numpy()) < (len(ctrl_samples) * 0.75
+        if(np.sum(dtu_IFs.loc[max_iso, ctrl_samples].to_numpy() > dtu_IFs.loc[second_max_iso, ctrl_samples].to_numpy()) < (len(ctrl_samples) * p_dom
         )):
             pass
         else:
@@ -119,7 +119,8 @@ def main(args):
     sim_pheno = (pd.DataFrame([all_ids, sim_pheno_condition])).transpose()
     sim_pheno.columns = ['id', 'condition']
     sim_pheno.to_csv(args.sim_pheno, sep = '\t', index = False)
-    dtu_genes = select_dtu_genes(IFs, ctrl_samples, gene_names)
+    p_dom = getattr(args, 'p_dom', 0.75)
+    dtu_genes = select_dtu_genes(IFs, ctrl_samples, gene_names, p_dom)
     simulated_dtu_ifs, genotype_cluster_df = simulate_dtu(IFs, dtu_genes, ctrl_samples, case_samples, args.n_splicotypes, args.n_small)
     simulated_dtu_counts = recreate_tx_counts_matrix(simulated_dtu_ifs, gene_level_counts, all_ids)
     corrected_IFs, corrected_gene_level_counts = convert_counts_to_IF_and_gene_level(simulated_dtu_counts)
