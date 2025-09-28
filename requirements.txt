@@ -1,0 +1,27 @@
+# SPIT - Differential Transcript Usage Analysis Package
+# Core dependencies for SPIT v2.0.3
+
+# Data manipulation and analysis
+numpy>=1.20.3
+pandas>=1.3.4
+scipy>=1.11.1
+
+# Machine learning
+scikit-learn>=1.1.1
+
+# Visualization
+matplotlib>=3.4.3
+matplotlib-venn>=0.11.6
+seaborn>=0.11.2
+
+# Progress bars and utilities
+tqdm>=4.62.3
+
+# Optional dependencies for advanced features
+# Uncomment if you need R integration for inferential replicates
+# rpy2>=3.4.5
+
+# Development dependencies (uncomment if needed)
+# pytest>=6.0.0
+# black>=21.0.0
+# flake8>=3.9.0
