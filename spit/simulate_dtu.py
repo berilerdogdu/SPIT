@@ -5,8 +5,9 @@ import random
 from collections import defaultdict
 
 
-def select_dtu_genes(IFs, ctrl_samples, gene_names, p_dom=0.75):
-    pot_dtu_genes = random.sample(gene_names, 1000)
+def select_dtu_genes(IFs, ctrl_samples, gene_names, p_dom=0.75, n_splicotypes=5, n_dtu_genes=30):
+    pot_dtu_genes = gene_names.copy()
+    random.shuffle(pot_dtu_genes)
     dtu_IFs = IFs[IFs.gene_id.isin(pot_dtu_genes)]
     dtu_IFs.insert(0, "ctrl_IF_mean", dtu_IFs[ctrl_samples].mean(axis = 1))
     ctrl_IF_max = dtu_IFs.sort_values('ctrl_IF_mean', ascending=False).drop_duplicates(['gene_id'])
@@ -15,7 +16,7 @@ def select_dtu_genes(IFs, ctrl_samples, gene_names, p_dom=0.75):
     dtu_gene_counter = 0
     final_dtu_genes = set()
     for g in pot_dtu_genes:
-        if(dtu_gene_counter == 100):
+        if(dtu_gene_counter == (n_splicotypes+1)*n_dtu_genes):
             return list(final_dtu_genes)
         max_iso = ctrl_IF_max[ctrl_IF_max.gene_id == g].index
         second_max_iso = ctrl_IF_second_max[ctrl_IF_second_max.gene_id == g].index
@@ -48,7 +49,7 @@ def partition_samples_to_subgroups(case_samples, n_of_genotypes, n_small):
                 val_sample_size = False
         c+=1
 
-def simulate_dtu(IFs, dtu_genes, ctrl_samples, case_samples, n_of_genotypes, n_small):
+def simulate_dtu(IFs, dtu_genes, ctrl_samples, case_samples, n_of_genotypes, n_small, n_dtu_genes=30):
     genotype_gene_dict = defaultdict(list)
     genotype_cluster_df = pd.DataFrame(0, index=IFs.index, columns=IFs.columns)
     dtu_IFs = IFs[IFs.gene_id.isin(dtu_genes)]
@@ -56,7 +57,7 @@ def simulate_dtu(IFs, dtu_genes, ctrl_samples, case_samples, n_of_genotypes, n_s
     ctrl_IF_max = dtu_IFs.sort_values('ctrl_IF_mean', ascending=False).drop_duplicates(['gene_id'])
     ctrl_IF_min = dtu_IFs.sort_values('ctrl_IF_mean', ascending=True).drop_duplicates(['gene_id'])
     for i in range(n_of_genotypes+1):
-        genotype_gene_dict[i] = random.sample(dtu_genes, 30)
+        genotype_gene_dict[i] = random.sample(dtu_genes, n_dtu_genes)
     genotype_sample_dict = partition_samples_to_subgroups(case_samples, n_of_genotypes, n_small)
     for i in range(1, n_of_genotypes+1):
         genotype_samples = genotype_sample_dict[i]
@@ -120,8 +121,9 @@ def main(args):
     sim_pheno.columns = ['id', 'condition']
     sim_pheno.to_csv(args.sim_pheno, sep = '\t', index = False)
     p_dom = getattr(args, 'p_dom', 0.75)
-    dtu_genes = select_dtu_genes(IFs, ctrl_samples, gene_names, p_dom)
-    simulated_dtu_ifs, genotype_cluster_df = simulate_dtu(IFs, dtu_genes, ctrl_samples, case_samples, args.n_splicotypes, args.n_small)
+    n_dtu_genes = getattr(args, 'n_dtu_genes', 30)
+    dtu_genes = select_dtu_genes(IFs, ctrl_samples, gene_names, p_dom, args.n_splicotypes, n_dtu_genes)
+    simulated_dtu_ifs, genotype_cluster_df = simulate_dtu(IFs, dtu_genes, ctrl_samples, case_samples, args.n_splicotypes, args.n_small, n_dtu_genes)
     simulated_dtu_counts = recreate_tx_counts_matrix(simulated_dtu_ifs, gene_level_counts, all_ids)
     corrected_IFs, corrected_gene_level_counts = convert_counts_to_IF_and_gene_level(simulated_dtu_counts)
     c_if_cols = corrected_IFs.select_dtypes(include=[np.number]).columns

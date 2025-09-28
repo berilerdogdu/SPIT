@@ -55,6 +55,7 @@ def run_single_experiment(exp_num, args):
         n_small=getattr(args, 'n_small', None),
         n_splicotypes=getattr(args, 'n_splicotypes', getattr(args, 'n_spliceotypes', None)),
         p_dom=getattr(args, 'p_dom', 0.75),
+        n_dtu_genes=getattr(args, 'n_dtu_genes', 30),
     )
     simulate_dtu_main(sim_args)
 
