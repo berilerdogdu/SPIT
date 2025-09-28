@@ -20,9 +20,7 @@ SPIT is available as a PyPI package and can be installed by calling:
 pip install spit
 ```
 
-An extensive step-by-step guide that demonstrates the application of SPIT using a mock dataset is provided [here](https://colab.research.google.com/drive/1u3NpleqcAfNz_0EAgO2UHItozd9PsF1w?usp=sharing).
-
-Users can also directly upload their datasets into this Colab environment and easily run SPIT [online](https://colab.research.google.com/drive/1u3NpleqcAfNz_0EAgO2UHItozd9PsF1w?usp=sharing).
+An extensive step-by-step guide that demonstrates the application of SPIT using a mock dataset is provided [here](https://colab.research.google.com/drive/1u3NpleqcAfNz_0EAgO2UHItozd9PsF1w?usp=sharing). Users can also directly upload their datasets into this Colab environment and easily run SPIT online.
 
 
 ##### If you use SPIT, please cite:
