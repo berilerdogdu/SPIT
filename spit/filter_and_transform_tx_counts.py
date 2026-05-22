@@ -62,7 +62,8 @@ def filter_on_isoform_count(counts, tx2gene):
 def select_genes_w_dom_iso(IFs, ctrl_samples, p_dom):
     print("...Selecting genes with consistently dominant isoforms in control group...")
     IFs = IFs[[*ctrl_samples, 'gene_id']]
-    IFs.insert(0, "ctrl_IF_mean", IFs[ctrl_samples].mean(axis = 1))
+    ctrl_IF_mean = IFs[ctrl_samples].mean(axis=1).rename("ctrl_IF_mean")
+    IFs = pd.concat([ctrl_IF_mean, IFs], axis=1)
     ctrl_IF_max = IFs.sort_values('ctrl_IF_mean', ascending=False).drop_duplicates(['gene_id'])
     ctrl_IF_no_max = IFs.drop(ctrl_IF_max.index)
     ctrl_IF_second_max = ctrl_IF_no_max.sort_values('ctrl_IF_mean', ascending=False).drop_duplicates(['gene_id'])    
@@ -134,9 +135,9 @@ def main(args):
     final_filtered_ifs[value_cols_ifs] = final_filtered_ifs[value_cols_ifs].astype(np.float32)
     final_filtered_ifs.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_ifs.txt"), sep = '\t')
     final_gene_ids = filtered_IF_data_on_isoform_count.join(tx2gene).gene_id.to_list()
-    final_filtered_gene_counts = gene_level_counts[gene_level_counts.index.isin(final_gene_ids)]
+    final_filtered_gene_counts = gene_level_counts[gene_level_counts.index.isin(final_gene_ids)].copy()
     numeric_cols = final_filtered_gene_counts.select_dtypes(include=[np.number]).columns
-    final_filtered_gene_counts[numeric_cols] = final_filtered_gene_counts[numeric_cols].astype(np.int32)
+    final_filtered_gene_counts.loc[:, numeric_cols] = final_filtered_gene_counts.loc[:, numeric_cols].astype(np.int32)
     final_filtered_gene_counts.to_csv(os.path.join(args.O, "SPIT_analysis", "filtered_gene_counts.txt"), sep = '\t')
     
     if(args.p_dom > 0):
