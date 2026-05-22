@@ -24,6 +24,7 @@ An extensive step-by-step guide that demonstrates the application of SPIT using 
 
 
 ##### If you use SPIT, please cite:
-Erdogdu, B., Varabyou, A., Hicks, S.C., Salzberg, S.L. & Pertea, M. Detecting differential transcript usage in complex diseases with SPIT. bioRxiv, 2023.2007.2010.548289 (2023)
+B. Erdogdu, A. Varabyou, S. C. Hicks, S. L. Salzberg, M. Pertea, Detecting differential transcript usage in complex diseases with SPIT. Cell Reports Methods 4 (2024).
+
 
 ##### Please use [this Google group](https://groups.google.com/g/spit_dtu) to post your questions, comments, or bug reports.
