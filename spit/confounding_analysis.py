@@ -109,7 +109,7 @@ def build_random_forest_regr(cluster_m_joint_dtu, cov_names, covs_arr, ifs_dtu_a
 def write_post_filter_results(sig_tx_inds, cluster_m_joint_dtu, spit_cluster_matrix, tx2gene_dict, spit_out_file, controlled_spit_cluster_matrix, controlled_spit_out):
     sig_tx_ids = cluster_m_joint_dtu.iloc[sig_tx_inds,].index
     sig_gene_ids = [tx2gene_dict[i] for i in sig_tx_ids]
-    spit_out_df = pd.read_csv(spit_out_file, sep = '\t', header = None, names = ["gene_id", "flag"])
+    spit_out_df = pd.read_csv(spit_out_file, sep = '\t')
     spit_out_post_confounding = spit_out_df[spit_out_df.gene_id.isin(sig_gene_ids)]
     spit_out_post_confounding = spit_out_post_confounding.fillna('')
     spit_out_post_confounding.to_csv(controlled_spit_out, sep = '\t', index = False)

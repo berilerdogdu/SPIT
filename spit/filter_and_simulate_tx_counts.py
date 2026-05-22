@@ -16,6 +16,8 @@ def filter_on_cpm(counts, n):
     return filtered_cpm_row_ind
 
 def filter_on_tx_count(counts, pr_fraction, ctrl, case):
+    if pr_fraction <= 0:
+        return counts.index.to_list()
     filtered_tx_row_ind = counts.index.to_list()
     ctrl_zero_txs = counts[((counts[ctrl] == 0).astype(int).sum(axis=1) >= (len(ctrl)*pr_fraction))].index.to_list()
     case_zero_txs = counts[((counts[case] == 0).astype(int).sum(axis=1) >= (len(case)*pr_fraction))].index.to_list()

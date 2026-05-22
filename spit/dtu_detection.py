@@ -179,6 +179,30 @@ def find_and_flag_dtu_genes(ifs, likelihood_arr, likelihood_cutoff, wrst_p_arr, 
     flagged_genes = likelihood_outlier_genes.intersection(wrst_pos_genes)
     return wrst_pos_genes, flagged_genes
 
+def compute_wasserstein_per_sig_tx(ifs, wrst_p_arr, perm_p_cutoff, ctrl, case):
+    distances = np.full(len(ifs.index), np.nan, dtype=np.float64)
+    sig_indices = np.where(wrst_p_arr <= perm_p_cutoff)[0]
+    if len(sig_indices) == 0:
+        return distances
+    ctrl_arr = ifs.loc[:, ctrl].to_numpy(dtype=np.float64)
+    case_arr = ifs.loc[:, case].to_numpy(dtype=np.float64)
+    for i in sig_indices:
+        c = ctrl_arr[i]
+        s = case_arr[i]
+        if len(c) > 0 and len(s) > 0:
+            distances[i] = sts.wasserstein_distance(c, s)
+    return distances
+
+def max_wasserstein_per_gene(distances, ifs):
+    df = pd.DataFrame({'gene_id': ifs['gene_id'].values, 'wd': distances})
+    df = df.dropna(subset=['wd'])
+    if df.empty:
+        return {}
+    return df.groupby('gene_id')['wd'].max().to_dict()
+
+
+
+
 def compute_infReps_stats(infReps, IFs, tx2gene_dict, ctrl, case, cluster_size_lim, p_cutoff, likelihood_cutoff, b, f_cpm):
     infReps_stacked = np.stack(infReps, axis=2)
     infReps_transposed = np.transpose(infReps_stacked, axes=(1, 0, 2))
@@ -207,15 +231,21 @@ def get_stable_dtu(num_of_infReps, infReps_dtu_genes, infReps_flagged_genes, wrs
     flagged_genes_stable = [g for g, count in flagged_gene_counts.items() if count > int(num_of_infReps*0.5)]
     return dtu_genes_stable, flagged_genes_stable
 
-def write_final_results(wrst_pos_genes, flagged_genes, output):
-    with open(output, 'w') as f:
-        f.write("gene_id\tflag\n")
-        for g in wrst_pos_genes:
-            if(g in flagged_genes):
-                f.write(g + "\t" + "F" + "\n")
-            else:
-                f.write(g + "\n")
-    f.close()
+def write_final_results(wrst_pos_genes, flagged_genes, gene_scores, output):
+    rows = []
+    for g in wrst_pos_genes:
+        flag = 'F' if g in flagged_genes else ''
+        score = gene_scores.get(g, np.nan)
+        rows.append((g, flag, score))
+    df = pd.DataFrame(rows, columns=['gene_id', 'flag', 'wasserstein_distance'])
+    df = df.sort_values('wasserstein_distance', ascending=False, na_position='last')
+    df.to_csv(output, sep='\t', index=False)
+
+def compute_wasserstein_scores(IFs, wrst_p_arr, p_cutoff, ctrl, case):
+    wasserstein_per_tx = compute_wasserstein_per_sig_tx(IFs, wrst_p_arr, p_cutoff, ctrl, case)
+    gene_wasserstein_scores = max_wasserstein_per_gene(wasserstein_per_tx, IFs)
+    return gene_wasserstein_scores
+
     return
 
 def main(args):
@@ -234,6 +264,11 @@ def main(args):
     mad_scores = MADsfromMedian(likelihood_arr)
     likelihood_cutoff = filter_likelihood_on_mad(likelihood_arr, mad_scores)
     wrst_pos_genes, flagged_genes = find_and_flag_dtu_genes(IFs, likelihood_arr, likelihood_cutoff, wrst_p_arr, args.p_cutoff)
+    wasserstein_per_tx = compute_wasserstein_per_sig_tx(IFs, wrst_p_arr, args.p_cutoff, ctrl_samples, case_samples)
+    gene_wasserstein_scores = max_wasserstein_per_gene(wasserstein_per_tx, IFs)
+
+
+
     if(args.infReps):
         all_samples = pheno.id.to_list()
         infReps = []
@@ -248,12 +283,17 @@ def main(args):
         flagged_genes = flagged_genes_stable
     if(args.exp):
         write_dir = args.exp
-        write_final_results(wrst_pos_genes, flagged_genes, os.path.join(write_dir, "spit_out_k" + str(round(args.k, 1)) + ".b" + str(format(args.bandwidth, '.2f')) + ".txt"))
+        write_final_results(wrst_pos_genes, flagged_genes, gene_wasserstein_scores, os.path.join(write_dir, "spit_out_k" + str(round(args.k, 1)) + ".b" + str(format(args.bandwidth, '.2f')) + ".txt"))
+
+
+
         genotype_cluster_df.to_csv(os.path.join(write_dir, "spit_cluster_matrix_k"+ str(round(args.k, 1)) + ".b" + str(format(args.bandwidth, '.2f')) + ".txt"), sep = '\t')
         pd.DataFrame(wrst_p_arr, index = IFs.index, columns = ['p_value']).to_csv(os.path.join(write_dir, "all_p_values.txt"), sep = '\t')
     else:
         write_dir = os.path.join(args.O, "SPIT_analysis")
-        write_final_results(wrst_pos_genes, flagged_genes, os.path.join(write_dir, "spit_out.txt"))
+        write_final_results(wrst_pos_genes, flagged_genes, gene_wasserstein_scores, os.path.join(write_dir, "spit_out.txt"))
+
+
         genotype_cluster_df.to_csv(os.path.join(write_dir, "spit_cluster_matrix.txt"), sep = '\t')
         pd.DataFrame(wrst_p_arr, index = IFs.index, columns = ['p_value']).to_csv(os.path.join(write_dir, "all_p_values.txt"), sep = '\t')
 
