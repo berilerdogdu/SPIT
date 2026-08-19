@@ -41,6 +41,7 @@ def dtu(
     labels: Union[str, pd.DataFrame],
     output_dir: str = os.getcwd(),
     *,
+    tx2gene: Union[str, pd.DataFrame],
     # DTU options
     no_clusters: bool = False,
     n_small: Optional[int] = None,
@@ -57,7 +58,7 @@ def dtu(
     """Run SPIT DTU analysis on preprocessed data.
 
     Requires that spit.preprocess() has been run first to generate filtered files.
-    Only labels parameter is needed (for sample grouping).
+    `labels` and `tx2gene` may be file paths or DataFrames (same as preprocess).
 
     Returns a dict with keys:
     - 'spit_out_path': path to `spit_out.txt`
@@ -72,9 +73,11 @@ def dtu(
     _make_output_dir(output_dir)
     analysis_dir = os.path.join(output_dir, "SPIT_analysis")
 
-    # Only need labels for DTU analysis
     labels_path = _write_if_dataframe(
         labels, os.path.join(analysis_dir, "pheno.txt"), write_index=False
+    )
+    tx2gene_path = _write_if_dataframe(
+        tx2gene, os.path.join(analysis_dir, "tx2gene.txt"), write_index=False
     )
 
     # Check that preprocessing has been done
@@ -95,7 +98,7 @@ def dtu(
         # The handler will set args.i/args.g to the appropriate filtered/dominance files
         i=os.path.join(analysis_dir, "filtered_ifs.txt"),
         g=os.path.join(analysis_dir, "filtered_gene_counts.txt"),
-        m=os.path.join(analysis_dir, "tx2gene.txt"),  # from preprocessing
+        m=tx2gene_path,
         l=labels_path,
         O=output_dir,
         infReps=infReps,
